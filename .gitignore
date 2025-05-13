@@ -1,0 +1,60 @@
+# Dependencies
+/sync/node_modules/
+/sync/.pnp
+/sync/.pnp.js
+/sync/node_modules/.cache
+/sync/__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and distribution
+/sync/dist/
+/sync/build/
+/sync/.next/
+/sync/out/
+
+# Development and old files
+/sync/dev-old/
+/sync/test/
+
+# Environment variables
+/sync/.env
+/sync/.env.local
+/sync/.env.development.local
+/sync/.env.test.local
+/sync/.env.production.local
+
+# Logs
+/sync/npm-debug.log*
+/sync/yarn-debug.log*
+/sync/yarn-error.log*
+/sync/pnpm-debug.log*
+/sync/logs
+/sync/*.log
+/sync/server.log
+/sync/webpack.log
+
+# Process management
+/sync/server.pid
+/sync/webpack.pid
+.pm2/
+
+# Ephemeris files - handled separately
+/ephemeris/
+
+# Version directories - not needed in main repo
+/v0.1/
+/v0.2/
+/v0.3/
+/v0.4/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+/sync/coverage/

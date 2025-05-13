@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="G-SYNC Timepiece">
+  <meta name="theme-color" content="#1E1E1E">
+  <title>G-SYNC | Astronomical Timepiece</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:100,400,700">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Mono">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Roboto:wght@300;400;700&display=swap">
+  
+  <style>
+    /* v0.4 Styles */
+    :root {
+        --background-color: #000000;
+        --primary-color: #40a0ff;
+        --secondary-color: #ff8040;
+        --tertiary-color: #40ff80;
+        --text-color: #ffffff;
+        --clock-size: 500px;
+    }
+    
+    /* Earth marker pulsing animation */
+    @keyframes planet-pulse {
+        0% {
+            box-shadow: 0 0 7px #0080ff, 0 0 10px #0080ff;
+            opacity: 0.8;
+        }
+        100% {
+            box-shadow: 0 0 15px #40a0ff, 0 0 25px #0080ff;
+            opacity: 1;
+        }
+    }
+    
+    /* Sun marker (***) pulse animation */
+    @keyframes sun-pulsing {
+        0% {
+            color: #ffff40;
+            text-shadow: 0 0 15px #ffff40, 0 0 25px #ffff40;
+        }
+        100% {
+            color: #ffff80;
+            text-shadow: 0 0 25px #ffff80, 0 0 50px #ffff40;
+        }
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        padding: 20px;
+        overflow-x: hidden;
+    }
+    
+    /* v0.3 Theme */
+    body.v3-theme {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-size: 16px;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        touch-action: manipulation;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at 50% 50%, #515151 30%, #1E1E1E 100%);
+        font-family: "PT Mono", monospace;
+        overscroll-behavior: none;
+    }
+    
+    body.v3-theme.off {
+        background: radial-gradient(circle at 50% 50%, #313131 100%, #333 100%);
+    }
+
+    .header {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 0 20px 0;
+        height: 60px; /* Set fixed height to maintain consistency */
+    }
+    
+    /* Keep header styling consistent across themes */
+
+    .logo {
+        max-width: 270px; /* Increased from 240px to 270px */
+        height: auto;
+        margin: 15px 0 15px 0;
+        cursor: pointer;
+        filter: grayscale(0.8); /* Default grayscale for v4 theme */
+    }
+    
+    body.v3-theme .logo {
+        filter: grayscale(0.8); /* Keep same filter as v4 theme */
+    }
+    
+    /* v0.4 Design */
+    .description {
+        font-size: 1rem;
+        text-align: center;
+        max-width: 800px;
+        margin-bottom: 30px;
+        font-weight: 300;
+    }
+
+    .timepiece-container {
+        position: relative;
+        width: 515px;
+        height: 515px;
+        margin: 0px auto; /* Set to 0 since we're using a spacer div instead */
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: visible; /* Changed from hidden to visible */
+        background-color: rgba(10, 10, 30, 0.3);
+        box-shadow: 0 0 20px rgba(64, 160, 255, 0.2);
+    }
+    
+    body.v3-theme .timepiece-container {
+        background: transparent;
+        box-shadow: none;
+        margin-top: 20px; /* Add 20px extra spacing for a total of 100px (80px spacer + 20px margin) */
+    }
+    
+    /* v0.4 Center Tau */
+    h1#v4-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 120;
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    h1#v4-center:hover {
+        color: var(--secondary-color);
+    }
+
+    h1#v4-center.off {
+        opacity: 0;
+    }
+    
+    /* v0.3 G-sync center styling */
+    h1#center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        height: 205px;
+        width: 275px;
+        margin: 0;
+        text-align: center;
+        line-height: 200px;
+        font-size: 155px;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 400;
+        color: rgb(200, 200, 200);
+        text-shadow: 0 0px 50px rgba(255, 255, 255, 0.75),
+                     0 0px 150px rgba(255, 255, 255, 0.5),
+                     0 0px 200px rgba(255, 255, 255, 0);
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        z-index: 100;
+        transition: all 0.25s;
+        user-select: none;
+        display: none;
+    }
+    
+    body.v3-theme h1#center {
+        display: block;
+    }
+    
+    body.v3-theme h1#v4-center {
+        display: none;
+    }
+
+    h1#center.off {
+        color: transparent;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5),
+                     0 -1px 1px rgba(0, 0, 0, 0.15);
+    }
+
+    h1#center span {
+        font-size: 23px;
+        position: absolute;
+        top: 0;
+        left: 112px;
+    }
+    
+    /* v0.4 Clock container */
+    #clock {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s ease-in-out;
+        border-radius: 50%;
+    }
+
+    #clock.off {
+        opacity: 0.2;
+    }
+    
+    body.v3-theme #clock {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 515px;
+        height: 515px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+    }
+    
+    /* Default clock with glass casing visible for v0.3 */
+    body.v3-theme #clock.glass-visible {
+        background-image: linear-gradient(
+            60deg,
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(255, 255, 255, 0.15) 22%,
+            rgba(255, 255, 255, 0.2) 35%,
+            rgba(255, 255, 255, 0.35) 40%,
+            rgba(255, 255, 255, 0.45) 45%,
+            rgba(255, 255, 255, 0.55) 55%,
+            rgba(255, 255, 255, 0.4) 60%,
+            rgba(255, 255, 255, 0.3) 68%,
+            rgba(255, 255, 255, 0.2) 72%,
+            rgba(255, 255, 255, 0.15) 75%,
+            rgba(255, 255, 255, 0.05) 100%),
+            radial-gradient(
+              circle at 50% 10%,
+              rgba(180,180,180,1) 0%, 
+              rgba(140,140,140,1) 80%);
+        box-shadow: inset 0 7px 7px rgba(0, 0, 0, 0.35),
+                    inset 0 -1px 1px rgba(222, 220, 210, 1),
+                    0 1px 0 1px rgba(255, 255, 255, 0.5),
+                    0 0 0px 10px rgb(129, 127, 122),
+                    0 0px 0 12px rgb(32, 2, 2),
+                    0 0 0px 35px rgb(0, 4, 24),
+                    0 0px 0 38px rgb(32, 2, 2),
+                    0 1px 0 39px rgba(255, 255, 255, 0.5),
+                    0 0 0px 49px rgb(150, 133, 80),
+                    0 30px 50px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    body.v3-theme #clock.glass-visible::after {
+        content: "";
+        position: absolute;
+        width: 195px;
+        height: 33px;
+        top: 50%;
+        left: 50%;
+        transform: translate(31%, -50%);
+        border-radius: 8px;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.4),
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.1)
+        );
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.5s ease;
+    }
+
+    body.v3-theme #clock.off::after {
+        display: none;
+    }
+    
+    /* v0.4 Clock face */
+    #clock-face {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* v0.3 dial styling */
+    ul {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        list-style: none;
+        margin: -10px 0 0 -10px;
+    }
+
+    #year,
+    #second,
+    #minute,
+    #day,
+    #hour,
+    #month {
+        transform: rotateZ(0deg);
+        transition: all 0.5s cubic-bezier(0.5, -0.5, 0.500, 1.5);
+        will-change: transform;
+    }
+
+    li {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        text-align: right;
+        opacity: 0.2;
+        will-change: transform, opacity;
+        list-style-type: none; /* Ensure no bullet points or lines */
+        background: none; /* No background */
+        border: none; /* No border */
+    }
+
+    body.v3-theme li.active {
+        color: #ffffff;
+        opacity: 1;
+        font-family: "Montserrat", sans-serif;
+        font-size: 19px;
+    }
+    
+    /* v0.4 dial styling */
+    .dials {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        list-style: none;
+    }
+
+    .dials li {
+        position: absolute;
+        color: rgba(255, 255, 255, 0.35);
+        font-family: 'Roboto Mono', monospace;
+        font-size: 12px;
+        text-shadow: 0 0 5px rgba(64, 160, 255, 0.5);
+        transform-origin: center;
+        transition: all 0.5s ease;
+    }
+
+    .dials li.active {
+        color: var(--primary-color);
+        font-weight: bold;
+        font-size: 14px;
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+    
+    /* Planet color styling */
+    #second li.active {
+        color: #ff8040;
+        text-shadow: 0 0 15px #ff8040;
+        opacity: 1;
+    }
+
+    #minute li.active {
+        color: #40a0ff;
+        text-shadow: 0 0 15px #40a0ff;
+        opacity: 1;
+    }
+
+    #hour li.active {
+        color: #40ff80;
+        text-shadow: 0 0 15px #40ff80;
+        opacity: 1;
+    }
+
+    #day li.active {
+        color: #a040ff;
+        text-shadow: 0 0 15px #a040ff;
+        opacity: 1;
+    }
+
+    #month li.active {
+        color: #ff40a0;
+        text-shadow: 0 0 15px #ff40a0;
+        opacity: 1;
+    }
+
+    #year li.active {
+        color: #ffff40;
+        text-shadow: 0 0 15px #ffff40;
+        opacity: 1;
+    }
+
+    /* v0.3 overrides for active items */
+    body.v3-theme #second li.active,
+    body.v3-theme #minute li.active,
+    body.v3-theme #hour li.active,
+    body.v3-theme #day li.active,
+    body.v3-theme #month li.active,
+    body.v3-theme #year li.active {
+        color: #ffffff;
+        text-shadow: none;
+        font-family: "Montserrat", sans-serif;
+        font-size: 19px;
+        opacity: 1;
+    }
+    
+    /* Celestial bodies - v0.3 styling */
+    body.v3-theme #Sun, 
+    body.v3-theme #Venus, 
+    body.v3-theme #Mars, 
+    body.v3-theme #Jupiter, 
+    body.v3-theme #Saturn, 
+    body.v3-theme #Moon, 
+    body.v3-theme #Mercury {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background-color: #ffffff;
+        border: 1px solid #ffffff;
+        border-radius: 50%;
+        box-sizing: border-box;
+        transform: translate(-50%, -50%);
+        transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                   left 1.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                   top 1.5s cubic-bezier(0.19, 1, 0.22, 1),
+                   opacity 0.8s ease-in-out;
+        will-change: transform, left, top, opacity;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Planet specific colors for v0.3 */
+    body.v3-theme #Sun { background: linear-gradient(#ffff44, #ffffaa); }
+    body.v3-theme #Mercury { background: linear-gradient(rgb(60, 170, 100), #e0f0e0); }
+    body.v3-theme #Venus { background: linear-gradient(rgb(90, 30, 170), #e0d0f0); }
+    body.v3-theme #Earth { background: linear-gradient(#3aaf40, #c0f0d0); }
+    body.v3-theme #Mars { background: linear-gradient(rgb(190, 40, 40), #f0c0c0); }
+    body.v3-theme #Jupiter { background: linear-gradient(rgb(220, 120, 20), #f0dac0); }
+    body.v3-theme #Saturn { background: linear-gradient(rgb(50, 60, 120), #c0d0e0); }
+    body.v3-theme #Moon { background: linear-gradient(rgb(200, 210, 220), #ffffff); }
+    
+    /* v0.4 Planet markers */
+    .planet-marker {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+        transition: opacity 0.8s ease-in-out, left 1.5s cubic-bezier(0.19, 1, 0.22, 1), top 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        will-change: transform, left, top, opacity;
+    }
+
+    #Sun {
+        background-color: #ffff00;
+        box-shadow: 0 0 10px #ffff00;
+    }
+
+    #Mercury {
+        background-color: #a0a0a0;
+        box-shadow: 0 0 5px #a0a0a0;
+        width: 6px;
+        height: 6px;
+    }
+
+    #Venus {
+        background-color: #ff8000;
+        box-shadow: 0 0 7px #ff8000;
+        width: 8px;
+        height: 8px;
+    }
+
+    #Earth {
+        background-color: #0080ff;
+        box-shadow: 0 0 7px #0080ff;
+        width: 8px;
+        height: 8px;
+    }
+
+    #Mars {
+        background-color: #ff4000;
+        box-shadow: 0 0 6px #ff4000;
+        width: 7px;
+        height: 7px;
+    }
+
+    #Jupiter {
+        background-color: #ffa040;
+        box-shadow: 0 0 8px #ffa040;
+        width: 12px;
+        height: 12px;
+    }
+
+    #Saturn {
+        background-color: #ffe080;
+        box-shadow: 0 0 8px #ffe080;
+        width: 11px;
+        height: 11px;
+    }
+
+    #Moon {
+        background-color: #e0e0e0;
+        box-shadow: 0 0 5px #e0e0e0;
+        width: 5px;
+        height: 5px;
+    }
+    
+    /* v0.3 Star center styling */
+    #star-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        transform: translate(-50%, -50%) scale(0);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(160,220,255,0.7) 40%, rgba(100,170,255,0.2) 70%, transparent 100%);
+        box-shadow: 0 0 10px rgba(180, 220, 255, 0.7), 0 0 20px rgba(100, 180, 255, 0.3);
+        opacity: 0;
+        z-index: 91;
+        transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+    }
+    
+    /* Star breathing animation */
+    @keyframes star-breathing {
+        0%, 100% {
+            transform: translate(-50%, -50%) scale(0.8);
+            background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(130,190,255,0.8) 40%, rgba(80,140,255,0.3) 70%, transparent 100%);
+            box-shadow: 0 0 8px rgba(150, 200, 255, 0.7), 0 0 12px rgba(80, 140, 255, 0.4);
+        }
+        
+        50% {
+            transform: translate(-50%, -50%) scale(1.2);
+            background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(150,210,255,0.8) 40%, rgba(100,160,255,0.3) 70%, transparent 100%);
+            box-shadow: 0 0 12px rgba(160, 210, 255, 0.8), 0 0 20px rgba(100, 160, 255, 0.5);
+        }
+    }
+    
+    #star-center.pulsing {
+        animation: star-breathing 6s infinite ease-in-out;
+    }
+    
+    /* v0.3 auric ring styling */
+    #auric-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        transform: translate(-50%, -50%) scale(0.8);
+        border-radius: 50%;
+        border: 2px solid rgba(255, 245, 210, 0.2);
+        box-shadow: inset 0 0 40px rgba(255, 245, 210, 0.1), 0 0 20px rgba(255, 245, 210, 0.1);
+        opacity: 0;
+        z-index: 89;
+        pointer-events: none;
+        transition: all 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    
+    /* v0.3 earth wireframe */
+    #earth-wireframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120px;
+        height: 120px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 1s ease-in-out, transform 1.2s ease-out;
+        z-index: 90;
+        pointer-events: auto;
+        cursor: pointer;
+        display: none;
+    }
+    
+    body:not(.v3-theme) #earth-wireframe {
+        display: block;
+    }
+    
+    /* Main horizontal and vertical lines */
+    #earth-wireframe::before,
+    #earth-wireframe::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border-top: 1px solid rgba(255, 255, 255, 0.6);
+        border-left: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Additional latitude rings */
+    #earth-wireframe .latitude {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    #earth-wireframe .latitude.lat-1 { transform: rotateX(30deg); }
+    #earth-wireframe .latitude.lat-2 { transform: rotateX(60deg); }
+    #earth-wireframe .latitude.lat-3 { transform: rotateX(90deg); }
+    
+    /* Additional longitude rings */
+    #earth-wireframe .longitude {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    #earth-wireframe .longitude.long-1 { transform: rotateY(45deg); }
+    #earth-wireframe .longitude.long-2 { transform: rotateY(90deg); }
+    #earth-wireframe .longitude.long-3 { transform: rotateY(135deg); }
+    
+    /* Hidden class for toggling visibility */
+    .hidden {
+        display: none;
+    }
+    
+    /* v0.3 Zodiac Wireframe */
+    #zodiac-wireframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 540px;
+        height: 540px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        z-index: 90;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        /* Remove any clip-path or mask-image properties */
+        clip-path: none;
+        mask-image: none;
+    }
+    
+    /* Styling for each Zodiac Sector */
+    .zodiac-sector {
+        position: absolute;
+        width: 50%;
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.4);
+        top: 50%;
+        left: 50%;
+        transform-origin: 0% 0%;
+        opacity: 1;
+    }
+    
+    .planet-label {
+        color: rgb(150, 133, 80);
+        font-size: 16px;
+        text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+        position: absolute;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+    }
+    
+    .zodiac-label {
+        color: rgba(180,180,180,1);
+        font-size: 12px;
+        text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+        transform-origin: center;
+        text-align: center;
+    }
+    
+    #east-label {
+        position: absolute;
+        top: 50%;
+        left: 78%; /* Moved further to the right, outside the zodiac ring */
+        padding: 2px 4px;
+        background: none;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: bold;
+        text-shadow: 0px 0px 3px rgba(255, 255, 255, 0.7);
+        z-index: 120;
+        transform: translateY(-50%);
+        transition: all 0.5s ease-out;
+        /* Initially hidden but not with display:none so it can be animated */
+        opacity: 0;
+    }
+    
+    /* Info panel */
+    #info-panel {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 90vw;
+        width: min(600px, 90vw);
+        max-height: 80vh;
+        padding: 20px;
+        background: rgba(23, 23, 23, 0.95);
+        color: #f0f0f0;
+        font-family: "PT Mono", monospace;
+        font-size: 15px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        display: none;
+        text-align: left;
+        overflow-y: auto;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    
+    /* Spinner styling */
+    .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top: 4px solid #ffffff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+    }
+    
+    .celestial-display {
+        background: #1E2430;
+        padding: 16px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-family: "PT Mono", monospace;
+        box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        text-align: left;
+    }
+    
+    .celestial-display div {
+        padding: 6px 10px;
+        margin-bottom: 4px;
+        border-radius: 4px;
+        background: rgba(30, 40, 60, 0.4);
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        color: #e6e9f0;
+        border-left: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Animation keyframes */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Dashboard button for v0.3 */
+    .button-container {
+        display: none;
+        justify-content: right;
+        width: 100%;
+        margin: 0;
+        padding: 2rem;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        z-index: 100;
+    }
+    
+    /* Hide button in v3 theme */
+    body.v3-theme .button-container {
+        display: none;
+    }
+
+    .dashboard-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(124, 58, 237, 0.9));
+        color: white;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+
+    .dashboard-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .dashboard-button:active {
+        transform: translateY(1px);
+    }
+
+    .dashboard-button::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.6s ease;
+        z-index: -1;
+    }
+
+    .dashboard-button:hover::after {
+        left: 100%;
+    }
+
+    .button-icon {
+        margin-right: 0.5rem;
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .dashboard-button.glow {
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3), 0 1px 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .dashboard-button.glow:hover {
+        box-shadow: 0 7px 20px rgba(124, 58, 237, 0.4), 0 3px 6px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* footer for both themes */
+    .footer {
+        margin-top: 40px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+        font-family: 'Roboto', sans-serif;
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 50;
+    }
+    
+    /* Consistent footer styling for both themes */
+    body.v3-theme .footer {
+        font-family: 'Roboto', sans-serif;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .footer a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        body.v3-theme #clock {
+            width: 415px;
+            height: 415px;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        
+        h1#center {
+            font-size: 125px;
+            height: 165px;
+            width: 220px;
+            line-height: 160px;
+        }
+        
+        h1#center span {
+            font-size: 18px;
+            left: 90px;
+        }
+        
+        #zodiac-wireframe {
+            width: 440px;
+            height: 440px;
+        }
+        
+        #info-panel {
+            max-width: 95vw;
+            padding: 15px;
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body.v3-theme #clock {
+            width: 320px;
+            height: 320px;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        
+        h1#center {
+            font-size: 100px;
+            height: 140px;
+            width: 180px;
+            line-height: 140px;
+        }
+        
+        h1#center span {
+            font-size: 16px;
+            left: 72px;
+        }
+        
+        #zodiac-wireframe {
+            width: 340px;
+            height: 340px;
+        }
+        
+        /* Adjust the clock elements for smaller screens */
+        #year, #second, #minute, #day, #hour, #month {
+            transform-origin: center;
+        }
+        
+        body.v3-theme li.active {
+            font-size: 16px;
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <!-- Restore the original image structure to preserve theme toggle functionality -->
+    <img src="assets/G-SYNC-LOGO.svg" alt="G-SYNC Logo" class="logo" id="theme-toggle" onclick="window.location.reload()">
+  </div>
+  
+  <!-- Add a spacer div to push the timepiece down -->
+  <div style="height: 80px;"></div>
+  
+  <div class="timepiece-container">
+    <!-- Clock container with time dials and celestial objects -->
+    <div id="clock" class="glass-visible">
+      <ul id="second" style="border: none; background: none; list-style: none;"></ul>
+      <ul id="minute" style="border: none; background: none; list-style: none;"></ul>
+      <h1 id="center" class="off">G<span>sync</span></h1>
+      <h1 id="v4-center">𝜏</h1>
+      <ul id="hour" style="border: none; background: none; list-style: none;"></ul>
+      <ul id="day" style="border: none; background: none; list-style: none;"></ul>
+      <ul id="month" style="border: none; background: none; list-style: none;"></ul>
+      <ul id="degree" style="border: none; background: none; list-style: none;"></ul>
+      
+      <!-- Celestial bodies positioned around the clock - all initially hidden and centered with responsive positioning -->
+      <div id="Sun" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Moon" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Mercury" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Venus" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Earth" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Mars" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Jupiter" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+      <div id="Saturn" class="planet-marker" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+    </div>
+    
+    <!-- Wireframe Earth image, initially hidden -->
+    <div id="earth-wireframe" class="hidden">
+      <div class="latitude lat-1"></div>
+      <div class="latitude lat-2"></div>
+      <div class="latitude lat-3"></div>
+      <div class="longitude long-1"></div>
+      <div class="longitude long-2"></div>
+      <div class="longitude long-3"></div>
+    </div>
+    
+    <!-- Star-like center effect -->
+    <div id="star-center" class="hidden"></div>
+    
+    <!-- Auric outer ring -->
+    <div id="auric-ring" class="hidden"></div>
+    
+    <!-- Info panel for displaying celestial data and coordinates -->
+    <div id="info-panel" class="hidden">
+      <p>Latitude: <span id="latitude">...</span></p>
+      <p>Longitude: <span id="longitude">...</span></p>
+    </div>
+    
+    <!-- Zodiac for displaying celestial data and sectors -->  
+    <div id="zodiac-wireframe" class="hidden">
+      <div class="zodiac-sector" style="transform: rotate(0deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(30deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(60deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(90deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(120deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(150deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(180deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(210deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(240deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(270deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(300deg);"></div>
+      <div class="zodiac-sector" style="transform: rotate(330deg);"></div>
+    </div>
+    
+    <!-- EAST label for showing when timepiece is aligned -->  
+    <div id="east-label">EAST</div>
+  </div>
+  
+  <div class="button-container">
+    <a href="/dashboard" id="dashboard-button" class="dashboard-button glow">
+      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+      Dashboard
+    </a>
+  </div>
+
+  <div class="footer">
+    <p>G-SYNC &copy; 2025 | <a href="/dashboard" id="run-query">Index</a></p>
+  </div>
+
+  <script src="/js/jquery.js"></script>
+  <script>
+    // Constants for clock functionality
+    const d = new Date();
+    const Y = d.getFullYear();
+    const M = d.getMonth();
+    const DD = new Date(Y, M + 1, 0).getDate();
+    
+    // Constants for rotating elements
+    const DEG_PER_MONTH = 30;
+    const DEG_PER_HOUR = 15;
+    const DEG_PER_MIN_SEC = 6;
+    const DEGREE_STEP = 5;
+    
+    // Global variables
+    let clickSequence = 0;
+    let earthClickCount = 0;  // New counter for Earth marker clicks
+    let LONG_ALIGNED = false;
+    window.userLongitude = 0;
+    window.userLatitude = 0;
+    window.celestialData = null;
+    
+    // Zodiac signs array
+    const zodiacs = [
+      "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+      "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    ];
+    
+    // Initialize the timepiece
+    $(document).ready(function() {
+      // Draw the time elements
+      draw();
+      
+      // Set up initial positions
+      set_time();
+      
+      // Start the clock
+      updateClock();
+      
+      // Position planets at center initially
+      positionPlanetsAtCenter();
+      
+      // Check for saved theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'v3') {
+        applyV3Theme();
+      } else {
+        // Make sure earth wireframe is visible in v4 theme
+        $("#earth-wireframe").css({
+          opacity: 0.8,
+          display: 'block'
+        });
+      }
+      
+      // Initialize the zodiac visibility to state 0 (all invisible)
+      // Use setTimeout to ensure this runs after other initialization
+      setTimeout(() => {
+        toggleZodiacVisibility(0);
+      }, 500);
+      
+      // Add logo click handler to reset the system
+      $('#theme-toggle').click(function() {
+        // Reset the system to initial state if in animation mode (clickSequence === 1)
+        if (clickSequence === 1) {
+          // Reset animation state
+          starCenter.removeClass("pulsing").css({ opacity: 0 });
+          auricRing.css({ opacity: 0 });
+          zodiacWireframe.css({ opacity: 0 });
+          
+          // Hide planet markers
+          $("#Sun, #Mercury, #Venus, #Mars, #Jupiter, #Saturn, #Moon").css({ opacity: 0 });
+          
+          // Hide zodiac labels and east label together with the same fade effect
+          $(".zodiac-label").fadeOut(500);
+          $("#east-label").fadeOut(500);
+          
+          // Restore normal clock display
+          logo.removeClass("off");
+          $("#clock").addClass("glass-visible").removeClass("off");
+          
+          // Show header and footer again
+          $(".header").fadeIn(500);
+          $(".footer").fadeIn(500);
+          
+          // Reset sequence and alignment flags
+          clickSequence = 0;
+          LONG_ALIGNED = false;
+          
+          // Update to current time
+          const now = new Date();
+          const day = now.getDate() - 1;
+          const hour = now.getHours();
+          const minute = now.getMinutes();
+          const second = now.getSeconds();
+          const month = now.getMonth();
+          const yearDays = new Date(now.getFullYear(), month + 1, 0).getDate();
+          
+          // Update all time displays
+          monthUpdate(month);
+          dayUpdate(day, yearDays);
+          hourUpdate(hour);
+          minuteUpdate(minute);
+          secondUpdate(second);
+          degreeUpdate(0);
+        }
+      });
+      
+      // Add center click event to query ephemeris
+      $('#center, #v4-center').click(function() {
+        toggleDataDisplay();
+      });
+      
+      // Add Earth marker click to toggle labels
+      $('#Earth').click(function() {
+        earthClickCount = (earthClickCount + 1) % 3; // Cycle through 0, 1, 2
+        toggleZodiacVisibility(earthClickCount);
+      });
+      
+      // Add click handler for earth wireframe to toggle labels
+      $('#earth-wireframe').click(function() {
+        earthClickCount = (earthClickCount + 1) % 3; // Cycle through 0, 1, 2
+        toggleZodiacVisibility(earthClickCount);
+      });
+      
+      // Index link now navigates directly to dashboard via href
+    });
+    
+    // Draw time elements
+    function draw() {
+      createTimeElements("#second", 0, 59, true);
+      createTimeElements("#minute", 0, 59, true);
+      createTimeElements("#hour", 1, 24, true);
+      createTimeElements("#day", 1, DD, true);
+      createTimeElements("#month", 1, 12, true);
+      setDegreeTicks();
+      
+      // Highlight the *** marker in yellow initially with enhanced styling
+      setTimeout(() => {
+        $("#year li").each(function() {
+          if ($(this).text() === "***") {
+            $(this).css({
+              color: '#ffff40',
+              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40',
+              opacity: 1,
+              fontWeight: 'bold',
+              fontSize: '18px',
+              transform: $(this).css('transform') + ' scale(1.2)'
+            });
+          }
+        });
+      }, 100);
+    }
+    
+    // Create time elements with proper values
+    function createTimeElements(containerId, start, end, padZero = false) {
+      for (let i = start; i <= end; i++) {
+        const value = padZero && i < 10 ? "0" + i : i;
+        $(containerId).append(`<li data-item="${value}">${value}</li>`);
+      }
+    }
+    
+    // Set up degree ticks for the year/longitude dial
+    function setDegreeTicks() {
+      const container = $("#year");
+      container.empty();
+      
+      for (let i = 5; i <= 360; i += DEGREE_STEP) {
+        const d = i % 360;
+        const value = d < 10 ? "00" + d : d < 100 ? "0" + d : d;
+        const degree = i === 5 ? "***" : value;
+        container.append(`<li data-item="${degree}">${degree}</li>`);
+      }
+    }
+    
+    // Apply rotation transforms to dials
+    function applyRotationTransform(containerId, degreePerItem, translateX) {
+      $(`${containerId} li`).each(function (index) {
+        $(this).css({
+          transform: `rotateZ(${degreePerItem * index}deg) translateX(${translateX}px)`
+        });
+      });
+    }
+    
+    // Set up initial time positions
+    function set_time() {
+      applyRotationTransform("#second", DEG_PER_MIN_SEC, 200);
+      applyRotationTransform("#minute", DEG_PER_MIN_SEC, 170);
+      applyRotationTransform("#hour", DEG_PER_HOUR, 140);
+      applyRotationTransform("#day", 360 / DD, 110);
+      applyRotationTransform("#month", DEG_PER_MONTH, 80);
+      applyRotationTransform("#year", DEGREE_STEP, 230);
+    }
+    
+    // Update functions for each time unit
+    function secondUpdate(ts) {
+      const TS = ts % 60;
+      const deg = (360 / 60) * ts;
+      $("#second li").removeClass("active").eq(TS).addClass("active");
+      $("#second").css({ transform: `rotateZ(-${deg}deg)` });
+    }
+    
+    function minuteUpdate(tm) {
+      const TM = tm % 60;
+      const deg = (360 / 60) * tm;
+      $("#minute li").removeClass("active").eq(TM).addClass("active");
+      $("#minute").css({ transform: `rotateZ(-${deg}deg)` });
+    }
+    
+    function hourUpdate(th) {
+      const TH = th % 24;
+      const deg = (360 / 24) * th;
+      $("#hour li").removeClass("active").eq(TH).addClass("active");
+      $("#hour").css({ transform: `rotateZ(-${deg}deg)` });
+    }
+    
+    function dayUpdate(td, days) {
+      const TD = td % days;
+      const deg = (360 / days) * td;
+      $("#day li").removeClass("active").eq(TD).addClass("active");
+      $("#day").css({ transform: `rotateZ(-${deg}deg)` });
+    }
+    
+    function monthUpdate(tm) {
+      const TM = tm % 12;
+      const deg = (360 / 12) * tm;
+      $("#month li").removeClass("active").eq(TM).addClass("active");
+      $("#month").css({ transform: `rotateZ(-${deg}deg)` });
+    }
+    
+    function degreeUpdate(deg) {
+      // For normal updates, apply the transform - will be skipped in rotateLongitudeDial
+      if (!LONG_ALIGNED) {
+        $("#year").css({ transform: `rotateZ(-${deg}deg)` });
+      }
+      
+      // Find the tick mark that corresponds to the current degree
+      // The DEGREE_STEP is 5, so calculate which index would be "active"
+      const activeIndex = Math.round(deg / DEGREE_STEP) % (360 / DEGREE_STEP);
+      
+      // Remove active class from all ticks and add it to the current degree tick
+      $("#year li").removeClass("active");
+      $("#year li").eq(activeIndex).addClass("active");
+      
+      // Always make the *** marker special regardless of active state
+      $("#year li").each(function() {
+        if ($(this).text() === "***") {
+          // Get current transform and add scale
+          const currentTransform = $(this).css('transform');
+          // Extract the rotation and translation part, if there is one
+          const transformMatch = currentTransform.match(/rotateZ\(([^)]+)\)\s+translateX\(([^)]+)\)/);
+          
+          if (transformMatch) {
+            const rotation = transformMatch[1];
+            const translation = transformMatch[2];
+            $(this).css({
+              color: '#ffff40',
+              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40',
+              opacity: 1,
+              fontWeight: 'bold',
+              fontSize: '18px',
+              transform: `rotateZ(${rotation}) translateX(${translation}) scale(1.2)`
+            });
+          } else {
+            // Fallback if we can't parse the transform
+            $(this).css({
+              color: '#ffff40',
+              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40',
+              opacity: 1,
+              fontWeight: 'bold',
+              fontSize: '18px'
+            });
+          }
+        }
+      });
+    }
+    
+    // Update the clock continuously
+    function updateClock() {
+      const now = new Date();
+      const day = now.getDate() - 1;
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
+      const month = now.getMonth();
+      const yearDays = new Date(now.getFullYear(), month + 1, 0).getDate();
+      
+      // Update all time dials except year
+      monthUpdate(month);
+      dayUpdate(day, yearDays);
+      hourUpdate(hour);
+      minuteUpdate(minute);
+      secondUpdate(second);
+      
+      // Only update the degree dial if longitude has not been aligned manually
+      if (!LONG_ALIGNED) {
+        // Store the current transform before applying degreeUpdate
+        const currentTransform = $("#year").css("transform");
+        degreeUpdate(0);
+        
+        // If this is the initial update, add a transition that will be used when aligned
+        if (!$("#year").data("initialized")) {
+          $("#year").css({
+            "transition": "transform 2s cubic-bezier(0.19, 1, 0.22, 1)"
+          }).data("initialized", true);
+        }
+      }
+      
+      setTimeout(updateClock, 1000);
+    }
+    
+    // Initial setup for planets hidden at the center
+    function positionPlanetsAtCenter() {
+      const planets = ["#Sun", "#Mercury", "#Venus", "#Mars", "#Jupiter", "#Saturn", "#Moon"];
+      
+      planets.forEach(planetId => {
+        $(planetId).css({
+          opacity: 0,
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          display: 'none' // Hide them completely on initial load
+        });
+      });
+    }
+    
+    // Initialize planet markers with v3 styles
+    function initializePlanetMarkers() {
+      const planets = ["#Sun", "#Mercury", "#Venus", "#Mars", "#Jupiter", "#Saturn", "#Moon"];
+      const isV3Theme = $('body').hasClass('v3-theme');
+      
+      // Ensure all markers are positioned at center and styled
+      planets.forEach(planetId => {
+        $(planetId).css({
+          opacity: 0,
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: isV3Theme ? '16px' : $(planetId).width(), // Use theme-appropriate width
+          height: isV3Theme ? '16px' : $(planetId).height(), // Use theme-appropriate height
+          display: 'block' // Make sure they're visible now that we need them
+        });
+      });
+      
+      // Staggered fade-in
+      planets.forEach((planetId, index) => {
+        setTimeout(() => {
+          $(planetId).css({
+            opacity: 0.8
+          });
+        }, 100 * index);
+      });
+    }
+    
+    // Function to retrieve and display the user's geolocation
+    function displayLocation() {
+      const infoPanel = $("#info-panel");
+      
+      infoPanel.html(`
+        <h4>Retrieving Coordinates...</h4>
+        <div class="spinner"></div>
+      `).fadeIn();
+      
+      return new Promise((resolve, reject) => {
+        function success(position) {
+          const { latitude, longitude } = position.coords;
+          
+          infoPanel.html(`
+            <h4>Celestial Data</h4>
+            <p>Latitude: ${latitude.toFixed(5)}</p>
+            <p>Longitude: ${longitude.toFixed(5)}</p>
+          `);
+          
+          const coordinates = {
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude)
+          };
+          
+          resolve(coordinates);
+        }
+        
+        function error(err) {
+          infoPanel.html(`
+            <h4>Location Unavailable</h4>
+            <p>Could not retrieve your geolocation.</p>
+            <p>Error: ${err.message || 'Unknown error'}</p>
+            <p><small>Using default coordinates instead.</small></p>
+          `).fadeIn();
+          
+          // Fallback coordinates
+          const fallbackCoordinates = {
+            latitude: 40.7128,
+            longitude: -74.0060
+          };
+          
+          resolve(fallbackCoordinates);
+        }
+        
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(success, error, {
+            timeout: 10000,
+            maximumAge: 300000,
+            enableHighAccuracy: false
+          });
+        } else {
+          error(new Error("Geolocation not supported"));
+        }
+      });
+    }
+    
+    // Simulate fetching celestial data (mock for v0.4 integration)
+    function fetchCelestialData(date, coordinates) {
+      const { latitude, longitude } = coordinates;
+      const infoPanel = $("#info-panel");
+      
+      infoPanel.html(`
+        <h4>Retrieving Celestial Data...</h4>
+        <div class="spinner"></div>
+      `).fadeIn();
+      
+      // Mock data for demonstration
+      const mockData = {
+        "Sun": {"longitude": 60, "latitude": 0, "distance": 1.0},
+        "Moon": {"longitude": 120, "latitude": 5, "distance": 0.002},
+        "Mercury": {"longitude": 35, "latitude": 2, "distance": 0.4},
+        "Venus": {"longitude": 180, "latitude": -1, "distance": 0.7},
+        "Mars": {"longitude": 240, "latitude": 1.5, "distance": 1.5},
+        "Jupiter": {"longitude": 300, "latitude": -0.5, "distance": 5.2},
+        "Saturn": {"longitude": 330, "latitude": 0.2, "distance": 9.5}
+      };
+      
+      // Simulate server delay
+      return new Promise(resolve => {
+        setTimeout(() => {
+          infoPanel.html(`
+            <h4>Ephemeris Query Results</h4>
+            <p>Coordinates: (${latitude.toFixed(5)}, ${longitude.toFixed(5)})</p>
+            <p>Date: ${date}</p>
+            <div class="celestial-display">
+              <div>Sun: ${mockData.Sun.longitude.toFixed(2)}� � Lat: ${mockData.Sun.latitude.toFixed(2)}� � Dist: ${mockData.Sun.distance}</div>
+              <div>Moon: ${mockData.Moon.longitude.toFixed(2)}� � Lat: ${mockData.Moon.latitude.toFixed(2)}� � Dist: ${mockData.Moon.distance}</div>
+              <div>Mercury: ${mockData.Mercury.longitude.toFixed(2)}� � Lat: ${mockData.Mercury.latitude.toFixed(2)}� � Dist: ${mockData.Mercury.distance}</div>
+              <div>Venus: ${mockData.Venus.longitude.toFixed(2)}� � Lat: ${mockData.Venus.latitude.toFixed(2)}� � Dist: ${mockData.Venus.distance}</div>
+              <div>Mars: ${mockData.Mars.longitude.toFixed(2)}� � Lat: ${mockData.Mars.latitude.toFixed(2)}� � Dist: ${mockData.Mars.distance}</div>
+              <div>Jupiter: ${mockData.Jupiter.longitude.toFixed(2)}� � Lat: ${mockData.Jupiter.latitude.toFixed(2)}� � Dist: ${mockData.Jupiter.distance}</div>
+              <div>Saturn: ${mockData.Saturn.longitude.toFixed(2)}� � Lat: ${mockData.Saturn.latitude.toFixed(2)}� � Dist: ${mockData.Saturn.distance}</div>
+            </div>
+            <p><small>Click this panel to continue</small></p>
+          `);
+          
+          resolve(mockData);
+        }, 1500);
+      });
+    }
+    
+    // Convert longitude to degrees for the year dial
+    function convertLongitudeToDegrees(userLongitude) {
+      // Convert -180 to 180 range to 0 to 360 range
+      return (userLongitude + 180);
+    }
+    
+    // Rotate longitude dial to match user's longitude
+    function rotateLongitudeDial(userLongitude) {
+      const convertedDegrees = convertLongitudeToDegrees(userLongitude);
+      
+      // Set LONG_ALIGNED flag before making any changes to prevent clock updates from interfering
+      LONG_ALIGNED = true;
+      
+      // First update which degree should be active before starting animation
+      // Remove transition temporarily to avoid animation conflicts
+      $("#year").css({ transition: "none" });
+      
+      // Force a reflow to make sure the transition removal takes effect
+      void $("#year")[0].offsetHeight;
+      
+      // Set the active element first without animating the rotation
+      degreeUpdate(convertedDegrees);
+      
+      // Small delay to ensure the active class is applied before starting rotation
+      setTimeout(() => {
+        // Now apply the rotation with transition
+        $("#year").css({
+          transition: "transform 2s cubic-bezier(0.19, 1, 0.22, 1)",
+          transform: `rotateZ(-${convertedDegrees}deg)`
+        });
+      }, 50);
+      
+      // Force EAST label to be visible immediately with the rotation
+      console.log("Forcing EAST label visibility during rotation");
+      $("#east-label").css({
+        display: 'block',
+        opacity: 1
+      });
+      
+      // Show zodiac ring when longitude is aligned
+      $("#zodiac-wireframe").removeClass("hidden").css({
+        opacity: 0.8
+      });
+      
+      // Log for debugging
+      console.log("Longitude aligned to:", convertedDegrees);
+    }
+    
+    // Function to toggle visibility of #east-label
+    function toggleEastVisibility() {
+      console.log("toggleEastVisibility called - showing EAST label");
+      const eastLabel = $("#east-label");
+      
+      // Force EAST label to be visible immediately
+      eastLabel.css({
+        display: 'block',
+        opacity: 1
+      });
+      
+      // Keep it visible and don't fade it out automatically
+      // The fadeOut will happen with zodiac labels when exiting animation
+    }
+    
+    // Display zodiac signs around the dial
+    function displayZodiacAroundDial(userLongitude) {
+      const normalizedLongitude = userLongitude < 0 ? 360 + userLongitude : userLongitude;
+      const startingIndex = Math.floor(normalizedLongitude / 30) % 12;
+      
+      // Clear existing labels
+      $("#year .zodiac-label").remove();
+      
+      // First ensure the zodiac-wireframe is visible
+      const zodiacWireframe = $("#zodiac-wireframe");
+      if (zodiacWireframe.hasClass("hidden")) {
+        zodiacWireframe.removeClass("hidden");
+      }
+      
+      // Position labels precisely inside the zodiac ring at the center of each sector
+      zodiacs.forEach((zodiac, index) => {
+        const zodiacIndex = (startingIndex + index) % 12;
+        // Center the label in each 30° sector
+        const angle = index * 30 + 15; // Add 15° to center within the sector
+        const labelElement = $(`<div class="zodiac-label">${zodiacs[zodiacIndex]}</div>`);
+        
+        // The radius of the zodiac ring is 270px (based on the mask-image in toggleZodiacRingVisibility)
+        // Position labels inside the ring rather than outside
+        const radialDistance = 250; // Inside the zodiac ring (270px)
+        
+        labelElement.css({
+          position: 'absolute',
+          transform: `rotate(${angle}deg) translateX(${radialDistance}px) rotate(-${angle}deg)`, // Rotate, translate, then counter-rotate to keep text horizontal
+          transformOrigin: 'center',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: 'rgba(220, 220, 255, 0.9)',
+          textShadow: '0 0 5px rgba(150, 200, 255, 0.5)',
+          fontFamily: '"PT Mono", monospace',
+          zIndex: 95, // Just above the wireframe but below markers
+          opacity: 0,
+          width: '60px', // Fixed width for better positioning
+          marginLeft: '-30px' // Center the fixed width box
+        });
+        
+        $("#year").append(labelElement);
+      });
+      
+      // Enhance zodiac sector visibility
+      $(".zodiac-sector").css({
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        height: '1px',
+        boxShadow: '0 0 3px rgba(255, 255, 255, 0.5)',
+        opacity: 1
+      });
+      
+      // Apply masking to zodiac wireframe if not already applied
+      $("#zodiac-wireframe").css({
+        clipPath: 'circle(295px at center)',
+        maskImage: 'radial-gradient(circle 295px at center, transparent 260px, white 270px, white 290px, transparent 295px)',
+        width: '600px',
+        height: '600px'
+      });
+      
+      // Fade in labels with staggered effect
+      $(".zodiac-label").each(function(index) {
+        $(this).delay(index * 80).fadeTo(600, 1);
+      });
+    }
+    
+    // Position planets based on their celestial longitudes with enhanced animation
+    function animateMarkers(data) {
+      if (!data) return;
+      
+      const planets = [
+          { id: "#Sun", name: "Sun" },
+          { id: "#Mercury", name: "Mercury" },
+          { id: "#Venus", name: "Venus" },
+          { id: "#Mars", name: "Mars" },
+          { id: "#Jupiter", name: "Jupiter" },
+          { id: "#Saturn", name: "Saturn" },
+          { id: "#Moon", name: "Moon" }
+      ];
+      
+      const initialRadius = 15; // Initial small radius for first animation step
+      const intermediateRadius = 50; // Middle orbit radius for second animation step
+      const finalRadius = 282; // Final radius to position on zodiac ring (blue ribbon)
+      const labelOffset = 25; // Increased offset for labels
+      const centerX = 257.5;
+      const centerY = 257.5;
+      const initialDegreeAngle = 310; // Starting angle for initial pattern
+      const userLongitude = window.userLongitude || 0;
+      
+      // First, let's highlight the *** marker more dramatically
+      $("#year li").each(function() {
+        if ($(this).text() === "***") {
+          $(this).css({
+            color: '#ffff40', 
+            textShadow: '0 0 30px #ffff40, 0 0 50px #ffff40',
+            opacity: 1,
+            fontWeight: 'bold',
+            fontSize: '22px' // Temporarily make it even larger
+          });
+          
+          // Add a pulsing animation
+          const originalTransform = $(this).css('transform');
+          function pulse() {
+            $(this).animate({
+              textShadow: '0 0 60px #ffff40, 0 0 100px #ffff40'
+            }, 800, function() {
+              $(this).animate({
+                textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40'
+              }, 800, pulse);
+            });
+          }
+          pulse.call($(this));
+        }
+      });
+      
+      // Step 1: Place markers at the center and make them visible with a fade-in effect
+      planets.forEach(({ id }, index) => {
+          $(`${id}`).css({
+              display: 'block',
+              left: `${centerX}px`,
+              top: `${centerY}px`,
+              opacity: 0,
+              position: 'absolute',
+              transform: 'translate(-50%, -50%) scale(0.5)'
+          });
+          
+          // Staggered fade-in
+          setTimeout(() => {
+              $(`${id}`).css({
+                  opacity: 1,
+                  transform: 'translate(-50%, -50%) scale(1)',
+                  transition: 'opacity 0.8s ease-out, transform 1s cubic-bezier(0.19, 1, 0.22, 1)'
+              });
+          }, index * 120);
+      });
+      
+      // Step 2: Move markers outward in a spiral pattern
+      setTimeout(() => {
+          planets.forEach(({ id }, index) => {
+              // Create a spiral effect by increasing radius with each planet
+              const spiralRadius = initialRadius + (index * 5);
+              const angleOffset = ((index * 60 + initialDegreeAngle) % 360) * (Math.PI / 180);
+              
+              $(`${id}`).css({
+                  left: `${centerX + spiralRadius * Math.cos(angleOffset)}px`,
+                  top: `${centerY + spiralRadius * Math.sin(angleOffset)}px`,
+                  transition: 'left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), top 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              });
+          });
+          
+          // Step 3: Transition to intermediate orbit with quick circular motion
+          setTimeout(() => {
+              planets.forEach(({ id }, index) => {
+                  const angleOffset = ((index * 51.4 + initialDegreeAngle) % 360) * (Math.PI / 180);
+                  $(`${id}`).css({
+                      left: `${centerX + intermediateRadius * Math.cos(angleOffset)}px`,
+                      top: `${centerY + intermediateRadius * Math.sin(angleOffset)}px`,
+                      transition: 'left 1s cubic-bezier(0.19, 1, 0.22, 1), top 1s cubic-bezier(0.19, 1, 0.22, 1)'
+                  });
+              });
+              
+              // Show the EAST label to indicate alignment
+              toggleEastVisibility();
+              
+              // Step 4: Move planets to their actual positions with dramatic effect
+              setTimeout(() => {
+                  // Reduce the *** marker back to normal enhanced size
+                  $("#year li").each(function() {
+                      if ($(this).text() === "***") {
+                          $(this).stop(true, true).css({
+                              fontSize: '18px',
+                              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40'
+                          });
+                      }
+                  });
+                  
+                  planets.forEach(({ id, name }, index) => {
+                      const planetData = data[name];
+                      if (planetData && typeof planetData.longitude === "number") {
+                          const angle = (planetData.longitude * Math.PI) / 180;
+                          const finalX = centerX + finalRadius * Math.cos(angle);
+                          const finalY = centerY + finalRadius * Math.sin(angle);
+                          
+                          // Set marker position with dramatic transition
+                          $(`${id}`).css({
+                              left: `${finalX}px`,
+                              top: `${finalY}px`,
+                              // Use a longer transition with a spring effect
+                              transition: 'left 1.8s cubic-bezier(0.34, 1.56, 0.64, 1), top 1.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                          });
+                          
+                          // Create and position label with improved styling
+                          const nameLabel = $("<div>")
+                              .addClass("planet-label")
+                              .text(name)
+                              .css({
+                                  position: 'absolute',
+                                  left: `${finalX + labelOffset * Math.cos(angle)}px`,
+                                  top: `${finalY + labelOffset * Math.sin(angle)}px`,
+                                  transform: 'translate(-50%, -50%)',
+                                  color: 'white',
+                                  textShadow: '0 0 8px rgba(255,255,255,0.8)',
+                                  fontSize: '14px',
+                                  fontWeight: 'bold',
+                                  opacity: 0
+                              });
+                          
+                          // Staggered fade-in for labels
+                          setTimeout(() => {
+                              nameLabel.fadeTo(800, 1);
+                              $(`${id}`).after(nameLabel);
+                          }, index * 150);
+                      }
+                  });
+                  
+                  // Step 5: Add organic movement to final positions
+                  setTimeout(() => {
+                      planets.forEach(({ id, name }) => {
+                          const planetData = data[name];
+                          if (planetData && typeof planetData.longitude !== "undefined") {
+                              const $planet = $(`${id}`);
+                              const currentLeft = parseFloat($planet.css('left'));
+                              const currentTop = parseFloat($planet.css('top'));
+                              
+                              // Add a small random adjustment with smoother animation
+                              $planet.animate({
+                                  left: (currentLeft + (Math.random() * 4 - 2)),
+                                  top: (currentTop + (Math.random() * 4 - 2))
+                              }, {
+                                  duration: 1200,
+                                  easing: 'easeInOutSine',
+                                  complete: function() {
+                                      // Add subtle continuous motion
+                                      setInterval(() => {
+                                          const currentLeft = parseFloat($planet.css('left'));
+                                          const currentTop = parseFloat($planet.css('top'));
+                                          $planet.animate({
+                                              left: (currentLeft + (Math.random() * 2 - 1)),
+                                              top: (currentTop + (Math.random() * 2 - 1))
+                                          }, 3000);
+                                      }, 3000);
+                                  }
+                              });
+                          }
+                      });
+                  }, 2000);
+              }, 1800);
+          }, 1200);
+      }, 800);
+      
+      // Add easing function for smoother animations
+      $.easing.easeInOutSine = function (x, t, b, c, d) {
+          return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+      };
+    }
+    
+    // Toggle timepiece data display sequence
+    function toggleDataDisplay() {
+      const infoPanel = $("#info-panel");
+      const earthWireframe = $("#earth-wireframe");
+      const starCenter = $("#star-center");
+      const auricRing = $("#auric-ring");
+      const logo = $("#center");
+      const zodiacWireframe = $("#zodiac-wireframe");
+      
+      // First click - initialize
+      if (clickSequence === 0) {
+        // Start in dark mode
+        logo.addClass("off");
+        $("#clock").removeClass("glass-visible").addClass("off");
+        
+        displayLocation()
+          .then(coordinates => {
+            if (!coordinates) throw new Error("Coordinates not available");
+            
+            return fetchCelestialData(`${DD}.${M+1}.${Y}`, coordinates)
+              .then(data => ({ coordinates, data }));
+          })
+          .then(({ coordinates, data }) => {
+            // Store coordinates and data for reuse
+            window.userLatitude = coordinates.latitude;
+            window.userLongitude = coordinates.longitude;
+            window.celestialData = data;
+            
+            // Show star center
+            starCenter
+              .removeClass("hidden")
+              .addClass("pulsing")
+              .css({
+                opacity: 1,
+                transform: "translate(-50%, -50%) scale(1)"
+              });
+            
+            // Show auric ring
+            auricRing
+              .removeClass("hidden")
+              .css({
+                opacity: 1,
+                transform: "translate(-50%, -50%) scale(1)"
+              });
+            
+            // Add click handler to the info panel to proceed with visualization
+            infoPanel.off("click").on("click", function() {
+              // Hide the info panel
+              $(this).fadeOut(500);
+              
+              // Fade out header and footer immediately
+              $(".header").fadeOut(0);
+              $(".footer").fadeOut(0);
+              
+              // In v3 theme, we only show the earth wireframe when in data display mode
+              if ($('body').hasClass('v3-theme')) {
+                earthWireframe
+                  .removeClass("hidden")
+                  .css({ 
+                    opacity: 0.8,
+                    display: 'block'
+                  });
+              }
+              
+              // Rotate dial to align with longitude
+              rotateLongitudeDial(coordinates.longitude);
+              
+              // Show zodiac labels
+              displayZodiacAroundDial(coordinates.longitude);
+              
+              // Initialize planet markers
+              initializePlanetMarkers();
+              
+              // Ensure EAST label is visible
+              console.log("Ensuring EAST label is visible from info panel handler");
+              $("#east-label").css({
+                display: 'block',
+                opacity: 1
+              });
+              
+              // Position planets based on celestial data
+              animateMarkers(data);
+            });
+            
+            // Increment click sequence
+            clickSequence = 1;
+          })
+          .catch(error => {
+            infoPanel.html(`
+              <h4>Error</h4>
+              <p>${error.message || "An unknown error occurred"}</p>
+              <p><small>Click to dismiss</small></p>
+            `).show();
+            
+            infoPanel.off("click").on("click", function() {
+              $(this).fadeOut(500);
+            });
+          });
+      }
+      // Second click - restore normal display
+      else if (clickSequence === 1) {
+        // Hide all special elements
+        if ($('body').hasClass('v3-theme')) {
+          // In v3 theme, hide the earth wireframe when not in data display mode
+          earthWireframe.css({ 
+            opacity: 0,
+            display: 'none'
+          });
+        } else {
+          // In v4 theme, keep earth wireframe visible but reduce opacity
+          earthWireframe.css({ 
+            opacity: 0.8,
+            display: 'block'
+          });
+        }
+        
+        starCenter.removeClass("pulsing").css({ opacity: 0 });
+        auricRing.css({ opacity: 0 });
+        zodiacWireframe.css({ opacity: 0 });
+        
+        // Hide planet markers
+        $("#Sun, #Mercury, #Venus, #Mars, #Jupiter, #Saturn, #Moon").css({ opacity: 0 });
+        
+        // Hide zodiac labels and east label together with the same fade effect
+        $(".zodiac-label").fadeOut(500);
+        $("#east-label").fadeOut(500);
+        
+        // Restore normal clock display
+        logo.removeClass("off");
+        $("#clock").addClass("glass-visible").removeClass("off");
+        
+        // Reset sequence and alignment
+        clickSequence = 0;
+        LONG_ALIGNED = false;
+      }
+    }
+    
+    // Function to toggle label visibility in sequence
+    function toggleZodiacVisibility(state) {
+      console.log("Toggling label visibility to state:", state);
+      console.log("EAST label current status:", {
+        display: $("#east-label").css("display"),
+        opacity: $("#east-label").css("opacity"),
+        visible: $("#east-label").is(":visible")
+      });
+      
+      // Always pulse Earth marker
+      $("#Earth").css({
+        animation: "planet-pulse 1.2s infinite alternate ease-in-out",
+        boxShadow: "0 0 15px #0080ff, 0 0 25px #0080ff",
+        opacity: 1
+      });
+      
+      // Make sure the zodiac wireframe is visible for state 2
+      if (state === 2) {
+        $("#zodiac-wireframe").css({
+          opacity: 0.7,
+          display: 'block'
+        });
+      }
+      
+      // Force planet label creation if needed
+      if ((state === 1 || state === 2) && $(".planet-label").length === 0 && window.celestialData) {
+        console.log("Planet labels missing, recreating via animateMarkers...");
+        animateMarkers(window.celestialData);
+        // Need a short delay to let labels be created
+        setTimeout(() => toggleZodiacVisibility(state), 500);
+        return;
+      }
+      
+      // Force zodiac label creation if needed (for state 2)
+      if (state === 2 && ($(".zodiac-label").length === 0 || $(".zodiac-label").css("display") === "none") && window.userLongitude !== undefined) {
+        console.log("Zodiac labels missing, recreating via displayZodiacAroundDial...");
+        displayZodiacAroundDial(window.userLongitude);
+        
+        // Add a delay to ensure labels are properly created and displayed
+        setTimeout(() => {
+          // Show zodiac labels directly
+          $(".zodiac-label").css({
+            opacity: 0.9,
+            color: 'rgba(220, 220, 255, 0.9)',
+            textShadow: '0 0 5px rgba(150, 200, 255, 0.5)',
+            display: "block"
+          });
+          
+          // Make sure they're visible
+          $(".zodiac-label").each(function(index) {
+            $(this).fadeTo(600, 0.9);
+          });
+        }, 100);
+      }
+      
+      // Use direct CSS methods for maximum reliability
+      // STATE 0: All labels invisible
+      if (state === 0) {
+        console.log("All labels hidden with direct CSS");
+        
+        // Hide all planet labels directly
+        $(".planet-label").css({
+          opacity: 0,
+          display: "none"
+        });
+        
+        // Hide all zodiac labels directly
+        $(".zodiac-label").css({
+          opacity: 0,
+          display: "none"
+        });
+        
+        // Hide EAST label
+        $("#east-label").css({
+          opacity: 0,
+          display: "none"
+        });
+      } 
+      // STATE 1: Just planet labels visible
+      else if (state === 1) {
+        console.log("Planet labels visible with direct CSS");
+        
+        // Show planet labels directly
+        $(".planet-label").css({
+          opacity: 1,
+          color: 'white',
+          textShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
+          display: "block"
+        });
+        
+        // Hide all zodiac labels
+        $(".zodiac-label").css({
+          opacity: 0,
+          display: "none"
+        });
+        
+        // Hide EAST label
+        $("#east-label").css({
+          opacity: 0,
+          display: "none"
+        });
+      } 
+      // STATE 2: Planet + zodiac + EAST labels visible
+      else if (state === 2) {
+        console.log("All labels visible with direct CSS");
+        
+        // Show planet labels directly
+        $(".planet-label").css({
+          opacity: 1,
+          color: 'white',
+          textShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
+          display: "block"
+        });
+        
+        // Check if zodiac labels need to be created first
+        if ($(".zodiac-label").length === 0 && window.userLongitude !== undefined) {
+          console.log("Creating zodiac labels for state 2");
+          displayZodiacAroundDial(window.userLongitude);
+        }
+        
+        // Show zodiac labels directly
+        $(".zodiac-label").css({
+          opacity: 0.9,
+          color: 'rgba(220, 220, 255, 0.9)',
+          textShadow: '0 0 5px rgba(150, 200, 255, 0.5)',
+          display: "block"
+        });
+        
+        // Force visibility of zodiac labels with slight delay to ensure display:block has taken effect
+        setTimeout(() => {
+          $(".zodiac-label").each(function() {
+            $(this).stop().fadeTo(400, 0.9);
+          });
+        }, 50);
+        
+        // Show EAST label directly with extra emphasis for debugging
+        console.log("STATE 2: Explicitly showing EAST label");
+        $("#east-label").css({
+          opacity: 1,
+          display: "block",
+          color: "#FFFFFF",
+          fontWeight: "bold",
+          textShadow: "0px 0px 5px rgba(255, 255, 255, 0.9)"
+        });
+        
+        // Force EAST label visibility with jQuery show and fadeTo for redundancy
+        $("#east-label").show().stop().fadeTo(200, 1);
+      }
+      
+      // Stop Earth animation after a delay
+      setTimeout(() => {
+        $("#Earth").css({
+          animation: "",
+          boxShadow: "0 0 7px #0080ff, 0 0 10px #0080ff",
+          opacity: 0.8
+        });
+      }, 2000);
+    }
+    
+    // Apply v3 theme styling
+    function applyV3Theme() {
+      $('body').addClass('v3-theme');
+      
+      // Set the logo to G-SYNC-LOGO.svg for v3 theme
+      $('#theme-toggle').attr('src', '/assets/G-SYNC-LOGO.svg');
+      
+      // Show v3-specific elements
+      $('#center').show();
+      $('#v4-center').hide();
+      
+      // Hide earth wireframe in v3 mode
+      $("#earth-wireframe").css({
+        opacity: 0,
+        display: 'none'
+      });
+      
+      // Completely reset and reapply the time display
+      // First get the current time
+      const now = new Date();
+      const day = now.getDate() - 1;
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
+      const month = now.getMonth();
+      const yearDays = new Date(now.getFullYear(), month + 1, 0).getDate();
+      
+      // Clear all transformations and reposition elements correctly
+      $("ul#second, ul#minute, ul#hour, ul#day, ul#month, ul#year").css("transform", "");
+      
+      // Reapply positioning
+      set_time();
+      
+      // Update all time displays
+      monthUpdate(month);
+      dayUpdate(day, yearDays);
+      hourUpdate(hour);
+      minuteUpdate(minute);
+      secondUpdate(second);
+      
+      if (!LONG_ALIGNED) {
+        degreeUpdate(0);
+      }
+      
+      // Style the celestial bodies
+      $("#Sun, #Mercury, #Venus, #Mars, #Jupiter, #Saturn, #Moon").css({
+        width: '16px',
+        height: '16px',
+        boxShadow: '0 0 10px rgba(255, 255, 255, 0.6)',
+        border: '1px solid #ffffff'
+      });
+      
+      // Style the glass casing
+      $("#clock").removeClass("off").addClass("glass-visible");
+      
+      // Sun - specific for v3
+      $("#Sun").css({ background: 'linear-gradient(#ffff44, #ffffaa)' });
+      
+      // Mercury - specific for v3
+      $("#Mercury").css({ background: 'linear-gradient(rgb(60, 170, 100), #e0f0e0)' });
+      
+      // Venus - specific for v3
+      $("#Venus").css({ background: 'linear-gradient(rgb(90, 30, 170), #e0d0f0)' });
+      
+      // Mars - specific for v3
+      $("#Mars").css({ background: 'linear-gradient(rgb(190, 40, 40), #f0c0c0)' });
+      
+      // Jupiter - specific for v3
+      $("#Jupiter").css({ background: 'linear-gradient(rgb(220, 120, 20), #f0dac0)' });
+      
+      // Saturn - specific for v3
+      $("#Saturn").css({ background: 'linear-gradient(rgb(50, 60, 120), #c0d0e0)' });
+      
+      // Moon - specific for v3
+      $("#Moon").css({ background: 'linear-gradient(rgb(200, 210, 220), #ffffff)' });
+    }
+    
+    // Apply v4 theme styling
+    function applyV4Theme() {
+      // Preserve existing transforms to prevent collapse
+      const secondTransform = $("#second").css("transform");
+      const minuteTransform = $("#minute").css("transform");
+      const hourTransform = $("#hour").css("transform");
+      const dayTransform = $("#day").css("transform");
+      const monthTransform = $("#month").css("transform");
+      const yearTransform = $("#year").css("transform");
+      
+      // Apply theme change first
+      $('body').removeClass('v3-theme');
+      
+      // Show v4-specific elements
+      $('#center').hide();
+      $('#v4-center').show();
+      
+      // Show earth wireframe in v4 mode
+      $("#earth-wireframe").removeClass('hidden').css({
+        opacity: 0.8,
+        display: 'block'
+      });
+      
+      // Hide other special elements
+      $("#star-center").removeClass("pulsing").css({ opacity: 0 });
+      $("#auric-ring").css({ opacity: 0 });
+      $("#zodiac-wireframe").css({ opacity: 0 });
+      
+      // Reset the clock
+      $("#clock").removeClass("glass-visible off");
+      
+      // Re-apply the exact same transforms to maintain element positions
+      $("#second").css("transform", secondTransform);
+      $("#minute").css("transform", minuteTransform);
+      $("#hour").css("transform", hourTransform);
+      $("#day").css("transform", dayTransform);
+      $("#month").css("transform", monthTransform);
+      $("#year").css("transform", yearTransform);
+      
+      // First get the current time for updating displayed values
+      const now = new Date();
+      const day = now.getDate() - 1;
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
+      const month = now.getMonth();
+      const yearDays = new Date(now.getFullYear(), month + 1, 0).getDate();
+      
+      // Make sure active elements are highlighted
+      // This resets active class without changing transforms
+      $("#second li").removeClass("active").eq(second % 60).addClass("active");
+      $("#minute li").removeClass("active").eq(minute % 60).addClass("active");
+      $("#hour li").removeClass("active").eq(hour % 24).addClass("active");
+      $("#day li").removeClass("active").eq(day % yearDays).addClass("active");
+      $("#month li").removeClass("active").eq(month % 12).addClass("active");
+      $("#year li").removeClass("active").eq(0).addClass("active");
+      
+      // Reset all active element styles first
+      $("#second li.active, #minute li.active, #hour li.active, #day li.active, #month li.active, #year li.active").removeAttr('style');
+      
+      // Keep the *** marker highlighted in yellow with enhanced styling
+      $("#year li").each(function() {
+        if ($(this).text() === "***") {
+          // Get current transform and add scale
+          const currentTransform = $(this).css('transform');
+          // Extract the rotation and translation part, if there is one
+          const transformMatch = currentTransform.match(/rotateZ\(([^)]+)\)\s+translateX\(([^)]+)\)/);
+          
+          if (transformMatch) {
+            const rotation = transformMatch[1];
+            const translation = transformMatch[2];
+            $(this).css({
+              color: '#ffff40',
+              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40',
+              opacity: 1,
+              fontWeight: 'bold',
+              fontSize: '18px',
+              transform: `rotateZ(${rotation}) translateX(${translation}) scale(1.2)`
+            });
+          } else {
+            // Fallback if we can't parse the transform
+            $(this).css({
+              color: '#ffff40',
+              textShadow: '0 0 20px #ffff40, 0 0 30px #ffff40',
+              opacity: 1,
+              fontWeight: 'bold',
+              fontSize: '18px'
+            });
+          }
+        }
+      });
+      
+      // SECONDARY VIEW: Apply colored styling to active elements in v4 mode
+      $("#second li.active").css({
+        color: '#ff8040',
+        textShadow: '0 0 15px #ff8040',
+        opacity: 1
+      });
+      
+      $("#minute li.active").css({
+        color: '#40a0ff',
+        textShadow: '0 0 15px #40a0ff',
+        opacity: 1
+      });
+      
+      $("#hour li.active").css({
+        color: '#40ff80',
+        textShadow: '0 0 15px #40ff80',
+        opacity: 1
+      });
+      
+      $("#day li.active").css({
+        color: '#a040ff',
+        textShadow: '0 0 15px #a040ff',
+        opacity: 1
+      });
+      
+      $("#month li.active").css({
+        color: '#ff40a0',
+        textShadow: '0 0 15px #ff40a0',
+        opacity: 1
+      });
+      
+      $("#year li.active").css({
+        color: '#ffff40',
+        textShadow: '0 0 15px #ffff40',
+        opacity: 1
+      });
+      
+      // Style the planet markers for v4
+      $("#Sun").css({
+        backgroundColor: '#ffff00',
+        boxShadow: '0 0 10px #ffff00',
+        width: '10px',
+        height: '10px',
+        border: 'none'
+      });
+      
+      $("#Mercury").css({
+        backgroundColor: '#a0a0a0',
+        boxShadow: '0 0 5px #a0a0a0',
+        width: '6px',
+        height: '6px',
+        border: 'none'
+      });
+      
+      $("#Venus").css({
+        backgroundColor: '#ff8000',
+        boxShadow: '0 0 7px #ff8000',
+        width: '8px',
+        height: '8px',
+        border: 'none'
+      });
+      
+      $("#Mars").css({
+        backgroundColor: '#ff4000',
+        boxShadow: '0 0 6px #ff4000',
+        width: '7px',
+        height: '7px',
+        border: 'none'
+      });
+      
+      $("#Jupiter").css({
+        backgroundColor: '#ffa040',
+        boxShadow: '0 0 8px #ffa040',
+        width: '12px',
+        height: '12px',
+        border: 'none'
+      });
+      
+      $("#Saturn").css({
+        backgroundColor: '#ffe080',
+        boxShadow: '0 0 8px #ffe080',
+        width: '11px',
+        height: '11px',
+        border: 'none'
+      });
+      
+      $("#Moon").css({
+        backgroundColor: '#e0e0e0',
+        boxShadow: '0 0 5px #e0e0e0',
+        width: '5px',
+        height: '5px',
+        border: 'none'
+      });
+      
+      // Reset click sequence and longitude alignment
+      clickSequence = 0;
+      LONG_ALIGNED = false;
+    }
+  </script>
+</body>
+</html>

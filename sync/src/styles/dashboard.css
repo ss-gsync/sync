@@ -1,0 +1,201 @@
+/**
+   * Dashboard styles for the G-SYNC Celestial Timepiece
+   */
+
+  /* These styles will be loaded by the dashboard.js entry point */
+  /* But for now we're using the inline styles in dashboard.html */
+
+  /* Ensure consistent styling with the main app */
+  :root {
+      --bg-dark: #1E1E1E;
+      --bg-panel: #2A2A2A;
+      --text-primary: #E0E0E0;
+      --text-secondary: #A0A0A0;
+      --accent-blue: #61DAFB;
+      --accent-green: #4CAF50;
+      --quantum-glow: rgba(97, 218, 251, 0.6);
+      --token-gold: rgba(212, 175, 55, 0.9);
+  }
+
+  /* Loading indicator */
+  .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(97, 218, 251, 0.2);
+      border-top: 4px solid var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+  }
+
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }
+
+  /* Security menu item - invisible until hover */
+  .menu-item.security-item {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+  }
+
+  .menu-item.security-item:hover,
+  .sidebar:hover .menu-item.security-item {
+      opacity: 1;
+  }
+
+  /* Data card styles to prevent flickering and ensure smooth transitions */
+  .data-card {
+      background-color: rgba(42, 42, 42, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+  }
+
+  .data-card:hover {
+      box-shadow: 0 6px 16px rgba(97, 218, 251, 0.2);
+      transform: translateY(-2px);
+  }
+
+  /* Enhanced quantum data card styling */
+  .quantum-data-card {
+      background-color: rgba(30, 35, 50, 0.8);
+      border: 1px solid rgba(97, 218, 251, 0.1);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+  }
+
+  .quantum-data-card:hover {
+      box-shadow: 0 6px 16px rgba(97, 218, 251, 0.3);
+      border-color: rgba(97, 218, 251, 0.2);
+  }
+
+  /* Apply smooth transitions to all data values */
+  .data-value {
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+
+  /* Enhanced quantum value styling */
+  .quantum-value {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .quantum-value:hover {
+      text-shadow: 0 0 8px rgba(97, 218, 251, 0.6);
+      color: var(--accent-blue);
+  }
+
+  /* Julian Cycle value with extra width for all digits */
+  #data-time {
+      min-width: 180px;
+      width: auto;
+      padding: 0.25rem 0.5rem;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
+      text-align: center;
+      margin: 0 auto;
+      background-color: rgba(10, 15, 30, 0.3);
+      border-radius: 4px;
+      border: 1px solid rgba(97, 218, 251, 0.1);
+  }
+
+  /* Julian Day label to appear below Component 1 */
+  .julian-day-container {
+      position: absolute;
+      left: 70px;
+      bottom: 90px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(10, 15, 30, 0.7);
+      padding: 8px 12px;
+      border-radius: 6px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(65, 105, 225, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .julian-day-label {
+      font-size: 0.8rem;
+      color: rgba(65, 105, 225, 0.9);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+  }
+
+  .julian-day-value {
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+  }
+
+  /* Quantum pulse animation for security indicators */
+  @keyframes quantumPulse {
+      0% { text-shadow: 0 0 4px rgba(97, 218, 251, 0.4); }
+      50% { text-shadow: 0 0 8px rgba(97, 218, 251, 0.6); }
+      100% { text-shadow: 0 0 4px rgba(97, 218, 251, 0.4); }
+  }
+
+  .quantum-active {
+      animation: quantumPulse 2s infinite ease-in-out;
+      color: var(--accent-blue) !important;
+  }
+
+  /* Enhanced icon styles */
+  .icon {
+      width: 24px;
+      height: 24px;
+      transition: all 0.3s ease;
+  }
+
+  .icon:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+  }
+
+  /* Enhance the favicon size */
+  .favicon {
+      width: 32px;
+      height: 32px;
+  }
+
+  /* Ensure smooth canvas transitions */
+  canvas {
+      transition: transform 0.5s ease-out;
+      -webkit-image-rendering: -webkit-optimize-contrast; /* Improved rendering on browsers */
+      image-rendering: crisp-edges; /* Modern standards */
+      backface-visibility: hidden; /* Prevent flickering */
+      will-change: transform, opacity; /* Hardware acceleration hint */
+  }
+
+  /* Specific optimizations for security visualizations */
+  #quantum-security-canvas,
+  #astronomical-canvas,
+  #identity-canvas,
+  #token-canvas {
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Enhanced data flow visualization */
+  .flow-indicator {
+      opacity: 0.8;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .flow-indicator:hover {
+      opacity: 1;
+      transform: scale(1.05);
+  }
+
+  /* Smooth rotations for all animations */
+  .rotating-element {
+      transition: transform 0.3s ease-out;
+  }

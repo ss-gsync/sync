@@ -1,0 +1,309 @@
+/* 
+ * Main styles for 𝜏 Quantum Identity
+ */
+
+/* Imported via index.js - these styles handle specific application elements not defined inline */
+
+/* Add any global styles not already defined in the HTML */
+
+/* Star center in gold state */
+#star-center.gold-star {
+    background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,220,120,0.8) 40%, rgba(255,180,60,0.3) 70%, transparent 100%);
+    box-shadow: 0 0 12px rgba(255, 220, 120, 0.8), 0 0 20px rgba(255, 180, 60, 0.5);
+    animation: gold-star-pulse 4s infinite ease-in-out;
+}
+
+/* Gold star pulsing animation */
+@keyframes gold-star-pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,220,120,0.8) 40%, rgba(255,180,60,0.3) 70%, transparent 100%);
+        box-shadow: 0 0 12px rgba(255, 220, 120, 0.8), 0 0 20px rgba(255, 180, 60, 0.5);
+    }
+    
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,230,140,0.8) 40%, rgba(255,190,80,0.3) 70%, transparent 100%);
+        box-shadow: 0 0 16px rgba(255, 230, 140, 0.9), 0 0 25px rgba(255, 190, 80, 0.6);
+    }
+}
+
+/* Sun marker (***) pulse animation */
+.sun-pulse {
+    animation: sun-pulsing 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes sun-pulsing {
+    0% {
+        color: #ffff80;
+        /* text-shadow: 0 0 15px #ffff80, 0 0 25px #ffff80; */
+    }
+    100% {
+        color: #ffff80;
+        /* text-shadow: 0 0 15px #ffff80, 0 0 25px #ffff80; */
+    }
+}
+
+/* Highlight effect for rotating degree dial */
+.highlight-rotation {
+    box-shadow: 0 0 20px rgba(97, 218, 251, 0.6), 0 0 40px rgba(97, 178, 251, 0.3);
+    z-index: 100;
+    animation: rotation-flash 1.2s ease-out;
+}
+
+@keyframes rotation-flash {
+    0% {
+        opacity: 0.7;
+        box-shadow: 0 0 5px rgba(97, 218, 251, 0.2);
+    }
+    40% {
+        opacity: 1;
+        box-shadow: 0 0 30px rgba(97, 218, 251, 0.9), 0 0 50px rgba(97, 178, 251, 0.6);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(97, 218, 251, 0.4), 0 0 20px rgba(97, 178, 251, 0.2);
+    }
+}
+
+/* Active visualization state for clock */
+#clock.visualization-active {
+    box-shadow: 0 0 15px rgba(97, 218, 251, 0.3);
+    transition: box-shadow 0.8s ease-in-out;
+}
+
+/* Remove visualization active class when animation completes */
+#clock.visualization-active.glass-visible {
+    transition: box-shadow 1.5s ease-out;
+    box-shadow: none;
+}
+
+/* Styling for the celestial data panel */
+#info-panel {
+    border-radius: 8px;
+    transition: all 0.3s ease-out;
+}
+
+#info-panel .click-instruction {
+    color: #61DAFB;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* Click effect on the info panel */
+#info-panel.panel-clicked {
+    transform: scale(0.98);
+    box-shadow: 0 0 20px rgba(97, 218, 251, 0.8), 0 0 40px rgba(97, 178, 251, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Attention-drawing effect for info panel */
+#info-panel.panel-attention {
+    animation: panel-pulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes panel-pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(97, 218, 251, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(97, 218, 251, 0.8), 0 0 30px rgba(97, 178, 251, 0.5);
+    }
+}
+
+/* Make zodiac wireframe more visible */
+#zodiac-wireframe {
+    opacity: 0.8 !important;
+    z-index: 140;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+/* Zodiac tick marks container */
+.zodiac-tick-container {
+    pointer-events: none;
+}
+
+/* Zodiac tick marks on the blue band */
+.zodiac-tick {
+    /* Animation removed */
+    opacity: 0.8;
+    box-shadow: 0 0 4px rgba(97, 218, 251, 0.7);
+}
+
+/* Gem pulse animation for planet markers */
+.gem-pulse {
+    animation: gem-pulsing 3s infinite alternate ease-in-out;
+}
+
+@keyframes gem-pulsing {
+    0% {
+        opacity: 0.7;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* Earth container highlight pulse effect */
+.highlight-pulse {
+    animation: highlight-pulsing 2s infinite alternate ease-in-out;
+}
+
+@keyframes highlight-pulsing {
+    0% {
+        box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(130, 180, 255, 0.9);
+    }
+}
+
+/* Earth container expanded glow effect */
+.expanded-glow {
+    box-shadow: 0 0 40px rgba(100, 150, 255, 0.6);
+    animation: expanded-glowing 8s infinite alternate ease-in-out;
+}
+
+@keyframes expanded-glowing {
+    0% {
+        box-shadow: 0 0 30px rgba(100, 150, 255, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 50px rgba(130, 180, 255, 0.8);
+    }
+}
+
+/* Earth rotation animation */
+@keyframes earth-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced Astronomical Data Display */
+.celestial-display {
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(10, 20, 40, 0.8);
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(50, 100, 200, 0.2);
+}
+
+.planet-row {
+    margin: 6px 0;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+}
+
+.planet-row:last-child {
+    border-bottom: none;
+}
+
+.planet-name {
+    display: inline-block;
+    width: 65px;
+    color: rgba(180, 220, 255, 1);
+    font-weight: bold;
+}
+
+.planet-data {
+    color: rgba(220, 240, 255, 0.9);
+    font-family: 'PT Mono', monospace;
+}
+
+.astronomical-notes {
+    margin-top: 15px;
+    font-size: 0.85em;
+    color: rgba(180, 220, 255, 0.7);
+    font-style: italic;
+}
+
+.coordinates, .date {
+    color: rgba(200, 230, 255, 0.9);
+    font-family: 'PT Mono', monospace;
+}
+
+/* Enhanced Planet Labels */
+.planet-label {
+    font-family: 'PT Mono', monospace;
+    text-shadow: 0 0 5px rgba(97, 218, 251, 0.6);
+    text-align: center;
+    pointer-events: none;
+    z-index: 200;
+}
+
+/* Special styling for Earth label */
+.earth-label {
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(77, 184, 255, 0.8);
+    animation: glow-pulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes glow-pulse {
+    0% {
+        text-shadow: 0 0 5px rgba(77, 184, 255, 0.6);
+    }
+    100% {
+        text-shadow: 0 0 12px rgba(77, 184, 255, 0.9);
+    }
+}
+
+/* Zodiac Wireframe Styling */
+#zodiac-wireframe {
+    position: absolute;
+    pointer-events: none;
+    z-index: 150;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+/* Zodiac labels */
+.zodiac-label {
+    font-family: 'PT Mono', monospace;
+    color: white;
+    text-shadow: 0 0 5px rgba(200, 220, 255, 0.7);
+    font-size: 12px;
+    pointer-events: none;
+}
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Add any spinner animations or other dynamic styles */
+@keyframes pulse {
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* Responsive adjustments not already handled inline */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.2rem !important;
+    }
+    
+    .description {
+        font-size: 0.8rem !important;
+    }
+}

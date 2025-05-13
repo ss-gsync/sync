@@ -1,0 +1,3883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self';">
+    <title>G-SYNC | Identity System</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital@0;1&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 10, 20, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            transition: opacity 0.3s ease;
+        }
+        
+        .popup-content {
+            background-color: rgba(12, 18, 28, 0.95);
+            border-radius: 12px;
+            padding: 2.5rem;
+            max-width: 620px;
+            width: 85%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(130, 180, 230, 0.15);
+            margin: 2rem;
+            
+            /* Elegant scrollbar styling */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(130, 180, 210, 0.3) rgba(20, 30, 50, 0.1);
+        }
+        
+        /* Custom scrollbar for webkit browsers */
+        .popup-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .popup-content::-webkit-scrollbar-track {
+            background: rgba(20, 30, 50, 0.1);
+            border-radius: 3px;
+        }
+        
+        .popup-content::-webkit-scrollbar-thumb {
+            background-color: rgba(130, 180, 210, 0.3);
+            border-radius: 3px;
+        }
+        
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 34px;
+            height: 34px;
+            background-color: rgba(20, 40, 70, 0.2);
+            border: 1px solid rgba(130, 180, 230, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: rgba(170, 200, 230, 0.7);
+            transition: all 0.2s ease;
+        }
+        
+        .popup-close:hover {
+            background-color: rgba(30, 50, 80, 0.3);
+            color: rgba(200, 220, 240, 0.9);
+        }
+        
+        .popup-title {
+            margin-top: 0;
+            color: rgba(140, 180, 230, 0.9);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .popup-description, .description-text {
+            color: rgba(220, 230, 245, 0.85);
+            line-height: 1.7;
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 300;
+            letter-spacing: 0.2px;
+            font-family: 'Inter', sans-serif;
+            text-align: justify;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+            -ms-hyphens: auto;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: "kern", "liga", "clig", "calt";
+        }
+        
+        /* LaTeX-inspired paragraph styling */
+        .popup-description:first-of-type, .description-text:first-of-type {
+            text-indent: 0;
+        }
+        
+        .popup-description + .popup-description, 
+        .description-text + .description-text {
+            text-indent: 1.5em;
+            margin-top: -0.3rem;
+        }
+        
+        /* Style for mathematical expressions and constants */
+        .math {
+            font-family: 'PT Serif', 'Playfair Display', Georgia, serif;
+            font-style: italic;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+        
+        /* Style for numerical references and values */
+        .num {
+            font-feature-settings: "tnum", "onum";
+            letter-spacing: 0px;
+        }
+        
+        .popup-note {
+            color: rgba(32, 197, 197, 0.85);
+            font-style: italic;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            line-height: 1.5;
+            padding-left: 1rem;
+            border-left: 2px solid rgba(32, 197, 197, 0.3);
+        }
+        
+        :root {
+            --bg-dark: #0A0F18;
+            --bg-panel: #121A24;
+            --text-primary: #E0E0E0;
+            --text-secondary: #A0A0A0;
+            --accent-blue: #61DAFB;
+            --accent-gold: #D4AF37;
+            --accent-teal: #20C5C5;
+            --canvas-perspective: none;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html, body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            grid-template-areas: 
+                "header"
+                "main";
+            height: 100vh;
+            overflow: hidden; /* Prevent page scrolling */
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard {
+                height: auto;
+                min-height: 100vh;
+            }
+        }
+        
+        /* Fixed header bar - hover zone only */
+        .header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: transparent;
+            z-index: 10001;
+            cursor: pointer;
+        }
+        
+        /* Header dropdown styling */
+        .header-dropdown {
+            position: fixed;
+            top: -85px; /* Hide header by default */
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            transition: top 0.4s ease;
+            background-color: #060C14;
+            border-bottom: 1px solid rgba(97, 218, 251, 0.2);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Header fixed and hover states for ALL views */
+        .header-dropdown.active {
+            position: fixed;
+            top: 0;
+            z-index: 10000 !important;
+        }
+        
+        /* Standard header visible state - shift content below it */
+        body.header-visible .main {
+            transform: translateY(65px) !important;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Fixed header state - shift content below it */
+        body.header-fixed .main {
+            transform: translateY(65px) !important;
+            transition: transform 0.3s ease;
+        }
+        
+        body.header-fixed .header-dropdown {
+            top: 0 !important;
+        }
+        
+        /* Default state */
+        .main {
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        /* Responsive layout specific adjustments */
+        @media (max-width: 1200px) {
+            /* No special responsive layout behavior needed since we're using the main container */
+        }
+        
+        /* Show header when hovering over the top bar or the header itself */
+        .header-dropdown.active {
+            top: 0; /* Show header when active class is applied */
+        }
+        
+        /* The actual header content */
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo span {
+            color: var(--accent-blue);
+            margin-left: 0.5rem;
+        }
+        
+        /* Default style is expanded view - grid layout */
+        .main {
+            grid-area: main;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 469px 1fr; /* Fixed width for components column, flexible for integrated view */
+            grid-template-areas: "components integrated";
+            gap: 2rem; /* Increased gap between components and integrated view */
+            width: 100%;
+            max-height: calc(100vh - 85px); /* Account for header height */
+            overflow: hidden; /* Prevent scrolling */
+            justify-content: center; /* Center the grid in available space */
+        }
+        
+        /* Properly position visualization panel and integrated visualization in grid areas */
+        .visualization-panel {
+            grid-area: components;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Increased gap between component cards */
+            align-self: start; /* Align to top */
+            justify-self: end; /* Align to right side of its area */
+        }
+        
+        .integrated-visualization#advanced-visualization {
+            grid-area: integrated;
+            justify-self: start; /* Align to left side of its area, next to components */
+            align-self: start; /* Align to top */
+            margin-left: 0; /* Ensure no extra margin */
+            margin-right: auto; /* Allow it to expand to the right */
+            height: auto; /* Allow height to adjust based on width */
+        }
+        
+        /* Stacked/mobile view always needs special handling */
+        @media (max-width: 1200px) {
+            /* Create a small version of the integrated visualization for stacked view */
+            .integrated-visualization#advanced-visualization {
+                display: none; /* Hide the larger visualization in stacked view */
+            }
+            
+            /* Small stacked version will be shown specifically with inline styles */
+        }
+        
+        /* Responsive layout adjustments */
+        @media (max-width: 1200px) {
+            .dashboard {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            
+            .main {
+                display: flex; /* Switch to flexbox for stacked layout */
+                flex-direction: column;
+                align-items: center;
+                flex: 1; /* Take up available space */
+                overflow-y: auto; /* Allow scrolling when in column layout */
+                padding: 1rem;
+                padding-top: 30px; /* Adjusted to 30px from the top as requested */
+                padding-bottom: 100px; /* Add enough padding for the fixed footer */
+                transition: padding-top 0.4s ease; /* Smooth transition when header appears */
+                min-height: calc(100vh - 85px); /* Ensure it takes full viewport height minus header */
+                grid-template-columns: 1fr; /* Override grid layout */
+                grid-template-areas: initial; /* Clear grid areas */
+            }
+        }
+        
+        /* Create a wrapper for the content */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            width: 100%;
+            min-height: calc(100vh - 150px); /* Full viewport height minus header and padding */
+            justify-content: space-between; /* This puts the footer at the bottom */
+        }
+        
+        /* Footer styling - completely different approach */
+        .footer {
+            display: none; /* Hidden by default */
+        }
+        
+        /* Show the footer in stacked view */
+        @media (max-width: 1200px) {
+            /* Create a more reliable footer */
+            .footer {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                max-width: 469px;
+                padding: 20px 30px;
+                margin: 20px auto 30px auto; /* Better spacing for the footer */
+                flex-direction: row-reverse; /* Identity icon to right, arrow to left */
+                position: relative; /* Ensure proper positioning */
+                bottom: 0; /* Stick to bottom */
+            }
+            
+            /* Force main content to be full height with flex */
+            .main {
+                display: flex;
+                flex-direction: column;
+                min-height: calc(100vh - 85px);
+            }
+            
+            /* Make content wrapper take available space */
+            .content-wrapper {
+                flex: 1;
+            }
+        }
+        
+        /* Hide header icons in stacked view */
+        @media (max-width: 1200px) {
+            .logo, .header-nav {
+                display: none !important;
+            }
+        }
+        
+        /* Spacer to push content apart */
+        .spacer {
+            flex: 1;
+        }
+        
+        /* SMALLER VIEW - only for stacked layout */
+        @media (max-width: 1200px) {
+            .integrated-visualization {
+                order: 4; /* Move to bottom in column layout as the 4th element */
+                width: 469px !important; /* Match the width of the other cards */
+                height: 220px !important; /* Match the height of the other cards */
+                min-height: 220px !important; /* Ensure minimum height */
+                min-width: 320px !important; /* Ensure minimum width but allow responsiveness */
+                max-width: 469px !important; /* Match the width of the other cards */
+                margin: 20px auto !important; /* Center horizontally with proper spacing */
+                border-radius: 12px; /* Match the border-radius of the cards */
+                overflow: hidden; /* Ensure content stays within bounds */
+                transform: none !important; /* Override any transforms */
+                flex: none !important; /* Don't flex in column layout */
+                aspect-ratio: auto !important; /* Don't force square in stacked view */
+                grid-area: auto !important; /* Remove grid area in stacked view */
+                display: block !important; /* Force display in stacked view */
+                align-self: center !important; /* Center in the flex container */
+            }
+        }
+        
+        /* Force the canvas to be visible */
+        .integrated-visualization canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        @media (max-width: 1200px) {
+            .visualization-panel {
+                order: 1; /* Keep at the top */
+                width: 100% !important; /* Full width container */
+                max-width: 469px !important; /* Maintain maximum width */
+                margin: 0 auto !important; /* Center in the layout */
+                flex-shrink: 0; /* Prevent shrinking */
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important; /* Center cards */
+                gap: 20px !important; /* Proper spacing between cards */
+            }
+        }
+        
+        /* Ensure consistent dimensions for all visualization elements with adjusted margins */
+        @media (max-width: 1200px) {
+            .vis-card {
+                height: 220px !important; /* Fixed height matching the integrated view */
+                flex-shrink: 0;
+                width: 469px !important; /* Fixed width */
+                max-width: 100% !important; /* Responsive */
+                margin: 0 !important; /* Remove default margins */
+                border-radius: 12px; /* Match the border-radius of the cards */
+            }
+        }
+        
+        /* Mobile view specific styles */
+        @media (max-width: 1200px) {
+            /* Ensure canvas containers maintain fixed height */
+            .canvas-container {
+                height: 220px !important;
+            }
+            
+            /* Fix canvas sizing */
+            .canvas-container canvas {
+                height: 100% !important;
+            }
+            
+            /* Component labels are now attached directly to each component */
+            
+            /* Show footer in stacked view */
+            .footer {
+                display: flex !important;
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Stacked view orbital elements styling */
+        @media (max-width: 1200px) {
+            /* Keep the visualization elements centered and properly sized in stacked view */
+            .integrated-visualization .orbital-path,
+            .integrated-visualization .vortex-element,
+            .integrated-visualization .token-element {
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: auto !important;
+                height: auto !important;
+            }
+            
+            /* Different scaling for each ring to maintain proper concentricity in stacked view */
+            .integrated-visualization .orbital-path:nth-child(1),
+            .integrated-visualization .vortex-element:nth-child(1) {
+                width: 80px !important;
+                height: 80px !important;
+            }
+            
+            .integrated-visualization .orbital-path:nth-child(2),
+            .integrated-visualization .vortex-element:nth-child(2) {
+                width: 120px !important;
+                height: 120px !important;
+            }
+            
+            .integrated-visualization .orbital-path:nth-child(3),
+            .integrated-visualization .vortex-element:nth-child(3) {
+                width: 160px !important;
+                height: 160px !important;
+            }
+            
+            .integrated-visualization .orbital-path:nth-child(4) {
+                width: 180px !important;
+                height: 180px !important;
+            }
+            
+            /* Token element sizing */
+            .integrated-visualization .token-element {
+                width: 70px !important;
+                height: 70px !important;
+            }
+            
+            /* Make controls more accessible in small view */
+            .controls {
+                top: 5px !important;
+                right: 5px !important;
+            }
+        }
+        
+        /* Additional media query for even smaller screens */
+        @media (max-width: 500px) {
+            .visualization-panel,
+            .integrated-visualization {
+                width: 100% !important;
+                min-width: 320px !important;
+            }
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            justify-content: center;
+        }
+        
+        /* Add these responsive media queries */
+        @media (max-width: 768px) {
+            .data-grid {
+                grid-template-columns: repeat(2, minmax(150px, 1fr));
+                max-width: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .data-grid {
+                grid-template-columns: repeat(1, 1fr);
+                max-width: 250px;
+            }
+        }
+        
+        .data-card {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 0.6rem;
+            flex: 1;
+            min-width: 130px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 65px;
+            text-align: center;
+        }
+        
+        .header-data-grid .data-card {
+            margin: 0 4px;
+        }
+        
+        .data-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .data-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Inter', monospace;
+            line-height: 1.2;
+            width: 100%;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .tau-badge {
+            background-color: rgba(97, 218, 251, 0.2);
+            color: var(--accent-blue);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .return-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-blue);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .return-link:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+        
+        /* Integrated visualization styles - LARGER VIEW (default) */
+        .integrated-visualization {
+            position: relative;
+            height: auto; 
+            width: calc(100% - 20px); /* Subtract padding for better fit */
+            min-height: 650px; /* Base size for expanded view */
+            min-width: 650px; /* Base size for expanded view */
+            max-height: calc(100vh - 120px); /* Adjust to account for header and padding */
+            overflow: hidden; /* Hide overflow, no scrolling */
+            border-radius: 12px;
+            background-color: rgba(0,0,0,0.7);
+            perspective: 1200px;
+            transition: all 0.3s ease-out; /* Shortened for more responsive feel */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            
+            /* Preserve aspect ratio to maintain circularity */
+            aspect-ratio: 1/1;
+            
+            /* Add responsive adjustments */
+            max-width: 100%; /* Allow it to take full width of its grid cell */
+            margin: 0; /* No extra margins */
+            grid-area: integrated; /* Place in the integrated grid area */
+            display: block; /* Ensure visibility by default */
+            align-self: flex-start; /* Position at top */
+            justify-self: flex-start; /* Position at left */
+            border: 1px solid rgba(97, 218, 251, 0.2); /* Subtle border for visibility */
+        }
+        
+        /* Apply 3D styles to the astronomical-canvas */
+        #astronomical-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            /* Improve rendering quality */
+            -webkit-image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        
+        #astronomical-canvas.three-d {
+            transform: rotateX(25deg) perspective(var(--canvas-perspective)) scale(1.1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9);
+            transition: transform 1.5s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 1.5s ease;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        
+        .control-button {
+            background: rgba(0, 10, 30, 0.7);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(97, 218, 251, 0.4);
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        
+        .control-button:hover {
+            background: rgba(30, 100, 180, 0.5);
+            color: white;
+            border-color: rgba(97, 218, 251, 0.8);
+        }
+        
+        /* Overlay elements */
+        .vortex-element {
+            position: absolute;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid rgba(97, 218, 251, 0.3);
+            box-shadow: 0 0 20px rgba(97, 218, 251, 0.1), inset 0 0 10px rgba(97, 218, 251, 0.1);
+            transition: all 0.8s ease-out;
+            pointer-events: none;
+        }
+        
+        .identity-element {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen;
+            opacity: 0.85;
+            transition: all 0.8s ease-out;
+            pointer-events: none;
+        }
+        
+        .token-element {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(32, 197, 197, 0.2) 0%, rgba(212, 175, 55, 0.1) 60%, transparent 100%);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            transform: translate(-50%, -50%);
+            transition: all 0.8s ease-out;
+            pointer-events: none;
+        }
+        
+        /* Data markers */
+        .data-point {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
+        
+        /* Particle system */
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        /* Dynamic grid system */
+        .grid-line {
+            position: absolute;
+            background-color: rgba(97, 218, 251, 0.15);
+            box-shadow: 0 0 2px rgba(97, 218, 251, 0.1);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .horizontal-grid {
+            width: 100%;
+            height: 1px;
+            left: 0;
+            right: 0;
+        }
+        
+        .vertical-grid {
+            width: 1px;
+            height: 100%;
+            top: 0;
+            bottom: 0;
+        }
+        
+        /* Celestial orbital paths */
+        .orbital-path {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 8px rgba(97, 218, 251, 0.05);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        /* Individual visualizations */
+        .visualization-panel {
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Full width of its grid area */
+            gap: 0.5rem; /* Reduced from 1rem for tighter vertical spacing */
+            max-height: calc(100vh - 120px); /* Match the main height constraint */
+            overflow-y: auto; /* Allow scrolling for the side panel if needed */
+            padding-right: 8px; /* Room for scrollbar */
+            justify-content: space-between; /* Evenly space elements in expanded view */
+            grid-area: components; /* Place in the components grid area */
+        }
+        
+        /* In expanded view, make sure the vis-card elements are spaced evenly */
+        @media (min-width: 1201px) {
+            /* Styles for the expanded/grid view */
+            .visualization-panel {
+                justify-content: space-between;
+                height: 100%; /* Take full height */
+                width: 469px; /* Fixed width in expanded mode */
+            }
+            
+            /* Keep the integrated visualization large in expanded view */
+            .integrated-visualization {
+                min-height: 650px !important;
+                min-width: 650px !important;
+                aspect-ratio: 1/1 !important;
+                display: block !important;
+            }
+            
+            .vis-card {
+                flex: 1; /* Allow cards to grow */
+                margin-bottom: 0.8rem; /* Ensure consistent spacing */
+                max-height: 32%; /* Limit height to ensure even spacing */
+            }
+            
+            /* Hide footer in expanded view */
+            .footer {
+                display: none !important;
+            }
+        }
+        
+        .vis-card {
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(97, 218, 251, 0.2);
+            margin-bottom: 0.5rem;
+        }
+        
+        .vis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-color: rgba(97, 218, 251, 0.2);
+        }
+        
+        /* Show buttons on hover over the canvas containers */
+        .canvas-container:hover .component-button {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* Adding hover effect for the button itself */
+        .component-button:hover {
+            background: rgba(24, 42, 60, 0.8) !important;
+            border-color: rgba(97, 218, 251, 0.6) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .integrated-visualization:hover .controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .canvas-container {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Adjust each canvas container's height */
+        #astronomical-container {
+            height: 220px;
+        }
+        
+        #quantum-container {
+            height: 220px;
+        }
+        
+        #token-container {
+            height: 220px;
+        }
+        
+        .canvas-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Description overlays */
+        .description-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.85);
+            color: var(--text-primary);
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 12px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 7px; /* Smaller padding at the top */
+        }
+        
+        /* Removed hover functionality as we now use buttons */
+        
+        .description-title {
+            font-size: 1.1rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+        
+        .description-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .description-relation {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--accent-teal);
+            margin-top: auto;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+    <!-- Allow dashboard.js to initialize -->
+    <script>
+        // Let dashboard.js handle initialization
+        window.TAUVisualInitDisabled = false;
+        
+        // Initialize label visibility state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if visibility has been set, default to visible
+            let currentValue = localStorage.getItem('TAUDashboard_identityLabelsVisible');
+            if (currentValue === null) {
+                // First time - set to visible by default
+                localStorage.setItem('TAUDashboard_identityLabelsVisible', 'true');
+                localStorage.setItem('showLabels', 'true');
+            }
+            
+            // Apply current visibility to title
+            let isVisible = localStorage.getItem('TAUDashboard_identityLabelsVisible') !== 'false';
+            const titleElement = document.getElementById('integrated-title');
+            if (titleElement) {
+                titleElement.style.display = isVisible ? 'block' : 'none';
+            }
+            
+            // Ensure global state is set
+            if (window.TAUDashboard) {
+                window.TAUDashboard.showLabels = isVisible;
+            }
+        });
+    </script>
+
+    <!-- Popup function implementation -->
+    <script>
+        function toggleLabels() {
+            // Simple toggle implementation that forces a page reload
+            let currentValue = localStorage.getItem('TAUDashboard_identityLabelsVisible');
+            
+            // Ensure the value is properly toggled between 'true' and 'false'
+            let newValue;
+            if (currentValue === 'false') {
+                newValue = 'true';
+            } else {
+                newValue = 'false';
+            }
+            
+            // Update both localStorage keys for consistency
+            localStorage.setItem('TAUDashboard_identityLabelsVisible', newValue);
+            localStorage.setItem('showLabels', newValue);
+            
+            // Reload the page to apply changes
+            window.location.reload();
+        }
+        
+        function showPopup(popupId) {
+            // Get the popup element
+            const popup = document.getElementById(popupId);
+            if (popup) {
+                // Apply smooth fade-in effect
+                popup.style.opacity = '0';
+                popup.style.display = 'flex';
+                
+                // Trigger reflow to ensure transition works
+                popup.offsetHeight;
+                
+                // Fade in
+                popup.style.transition = 'opacity 0.3s ease';
+                popup.style.opacity = '1';
+            }
+        }
+        
+        function closePopup(popupId) {
+            // Get the popup element
+            const popup = document.getElementById(popupId);
+            if (popup) {
+                // Add a smooth fade-out effect
+                popup.style.opacity = '0';
+                setTimeout(function() {
+                    popup.style.display = 'none';
+                    popup.style.opacity = '1';
+                }, 200);
+            }
+        }
+    </script>
+    
+    <!-- Enhanced visualization temporarily disabled -->
+</head>
+<body>
+    <!-- Header bar for triggering dropdown -->
+    <div class="header-bar" id="headerBar"></div>
+    
+    <!-- Popup Overlays for Header Cards -->
+    <div id="token-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('token-popup')">×</div>
+            <h3 class="popup-title">𝜏 Harmonic</h3>
+            <p class="popup-description">The 𝜏 Harmonic represents the quantum-secured token value derived from ephemeris calculations with astronomical precision. Each value is uniquely generated through a multi-layered mathematical process:</p>
+            <p class="popup-description">1. Baseline calculation using DE431 ephemeris data for planetary positions (±0.5 arcseconds)</p>
+            <p class="popup-description">2. Prime number sequence modulation using the first 1000 primes and their distribution patterns</p>
+            <p class="popup-description">3. Golden ratio (φ = 1.618033988...) application for value normalization within the range [0,1]</p>
+            <p class="popup-description">4. Final calculation: 𝜏ₕ = (Σpᵢ × φ⁻ⁱ × sin(θᵢ)) where pᵢ represents prime harmonics and θᵢ represents planetary angular positions</p>
+            <p class="popup-note">The displayed value maintains 6-digit precision with cryptographic strength equivalent to 256-bit encryption.</p>
+        </div>
+    </div>
+
+    <div id="rotation-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('rotation-popup')">×</div>
+            <h3 class="popup-title">Temporal Rotation</h3>
+            <p class="popup-description">The Temporal Rotation value is derived from precise astronomical alignments between the Earth's axial precession and real-time planetary positions. This angular measurement represents:</p>
+            <p class="popup-description">1. Current orientation of the G-SYNC astronomical clock relative to the J2000.0 reference frame (±0.01° precision)</p>
+            <p class="popup-description">2. Real-time calculation of Earth's position vector relative to solar system barycenter (DE431 ephemeris)</p>
+            <p class="popup-description">3. Fourier transform of planetary positional harmonics producing a range of [0°, 359.999°]</p>
+            <p class="popup-description">4. Calculation: θₜ = (Σωᵢ × sin(2πt/Tᵢ + φᵢ)) % 360° where ωᵢ represents orbital frequencies, Tᵢ periods, and φᵢ phase offsets</p>
+            <p class="popup-note">The rotation value serves as a cryptographic entropy source with uniform distribution properties, making it ideal for token security verification.</p>
+        </div>
+    </div>
+
+    <div id="julian-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('julian-popup')">×</div>
+            <h3 class="popup-title">System Signature</h3>
+            <p class="popup-description">The System Signature is a unique alphanumeric identifier generated from the current astronomical state, quantum structure, and token properties. This hexadecimal sequence encodes:</p>
+            <p class="popup-description">1. Prefix (Æ): Represents the Ash token system's quantum-astronomical foundation</p>
+            <p class="popup-description">2. First segment (7712): Derived from celestial positional vectors using the DE431 ephemeris data</p>
+            <p class="popup-description">3. Second segment (8813): Generated from quantum penrose pattern structure with φ-ratio relationships</p>
+            <p class="popup-description">4. Suffix (C02F): Security verification hash based on combined astronomical-quantum harmony</p>
+            <p class="popup-description">The signature utilizes a specialized hash function: S = h(JD || QS || τₕ) where JD is Julian Day, QS is quantum state, and τₕ is the harmonic value</p>
+            <p class="popup-note">Each signature has a cryptographic uniqueness guarantee of 1:2^64, making it statistically impossible to generate duplicate signatures even across billions of years.</p>
+        </div>
+    </div>
+
+    <div id="precision-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('precision-popup')">×</div>
+            <h3 class="popup-title">Verification Precision</h3>
+            <p class="popup-description">The Verification Precision value indicates the real-time consensus accuracy across distributed verification nodes in the G-SYNC network. Currently showing 0.0000% because:</p>
+            <p class="popup-description">1. No verification nodes are currently active in the distributed network</p>
+            <p class="popup-description">2. Network consensus requires a minimum of 5 geographically distributed nodes</p>
+            <p class="popup-description">3. Each node must independently validate astronomical calculations (±1km at 1AU) against DE431 ephemeris</p>
+            <p class="popup-description">4. When active, calculation uses: VP = 100 × (n/N) × (1 - σ²/τ) where n is active nodes, N is total nodes, σ² is variance, and τ is threshold</p>
+            <p class="popup-note">When properly configured, the network can achieve verification precision up to 99.9975%, representing an error margin of just 1:40,000 with cryptographic-grade reliability.</p>
+        </div>
+    </div>
+    
+    <div id="integrated-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('integrated-popup')">×</div>
+            <h3 class="popup-title">Integrated Identity System</h3>
+            <p class="popup-description">This visualization demonstrates a mathematically harmonious identity system that unifies astronomical principles with quantum patterning. At its foundation, the system uses precise Julian Day calculations (<span class="math">JD = 2440587.5 + ms/86400000</span>) as its temporal cornerstone, anchoring all identity elements to an immutable astronomical reference.</p>
+            <p class="popup-description">The underlying framework combines Penrose P<span class="num">3</span> tiling mathematics with golden ratio (<span class="math">φ = 1.6180339887...</span>) principles to create perfect <span class="num">5</span>-fold symmetry arrangements that never repeat yet maintain mathematical consistency. The astronomical representation employs quaternion transformations for multi-dimensional rotations, while the quantum structural layer ensures non-predictability through mathematically significant interference patterns based on prime number harmonics [<span class="num">7</span>, <span class="num">11</span>, <span class="num">13</span>, <span class="num">17</span>].</p>
+            <p class="popup-description">Critical mathematical components include:</p>
+            <p class="popup-description"><span class="num">1.</span> Astronomical time calculation with <span class="num">7</span>-digit accuracy (temporal error <span class="math">&lt; 10^{-6}</span> s)</p>
+            <p class="popup-description"><span class="num">2.</span> Penrose tiling with <span class="math">φ</span>-ratio scaling (recursive subdivisions with deterministic aperiodicity)</p> 
+            <p class="popup-description"><span class="num">3.</span> Quantum state representations using Fourier transforms of astronomical orbital vectors</p>
+            <p class="popup-description"><span class="num">4.</span> Fibonacci-sequence distribution of verification anchor points (golden angle <span class="math">= 137.5°</span>)</p>
+            <p class="popup-note">At the heart of the visualization rests a luminous astronomical body surrounded by a shimmering cloud of silver and gold light particles. This central element represents the τ (tau) constant (6.28318530718...), the fundamental circle constant that governs wave propagation properties throughout the identity system. The surrounding particles exhibit Fibonacci-derived distribution patterns with mathematically significant density gradients, creating natural aesthetic harmony through golden ratio proportions.</p>
+        </div>
+    </div>
+    
+    <!-- New component popups -->
+    <div id="astronomical-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('astronomical-popup')">×</div>
+            <h3 class="popup-title">Astronomical Clock</h3>
+            <p class="popup-description">This visualization implements a universal time reference anchored to precise Julian Day calculations (<span class="math">JD = 2440587.5 + milliseconds/86400000</span>), providing an immutable temporal foundation based on astronomical constants. Unlike standard earth-based clocks, this astronomical timepiece operates on sidereal timescales with cardinal directions (<span class="math">N</span>, <span class="math">E</span>, <span class="math">S</span>, <span class="math">W</span>) marking the ecliptic reference frame. The primary indicator (white hand) completes one rotation per Julian Day (<span class="num">86,400</span> seconds), while the secondary indicator (blue hand) rotates every <span class="num">7,200</span> seconds (<span class="num">2</span> hours), establishing a dual-reference temporal system using the <span class="math">φ</span> constant (<span class="num">1.618033988749895</span>) for harmonic spacing. This deliberate inversion of traditional timekeeping mechanics creates a stable reference frame against which all ephemeris calculations are calibrated, using slow-moving hands to track the fundamental cosmic timeframe within which faster planetary motions are measured and verified.</p>
+            <p class="popup-description">The clock's nested concentric rings establish the J<span class="num">2000.0</span> reference plane for high-precision astronomical measurements (<span class="math">±0.0001</span> arcseconds), with the hands tracing golden-ratio orbital arcs through the cosmic coordinate system. The luminous blue accents represent astronomical symmetry breaking at the <span class="math">10^{-43}</span> second threshold, while the central glow indicates temporal synchronization with DE<span class="num">431</span> ephemeris standards. This design ensures the timepiece functions as a mathematically provable astronomical reference point with perfect temporal alignment to universal Julian Day calculations (error margin <span class="math">&lt;1×10^{-6}</span> seconds) that underpin the entire security framework.</p>
+            <p class="popup-description">In the integrated identity system, this component acts as the temporal foundation, generating baseline timing signals that propagate to the quantum identity layer through quantum modulation vectors (QMVs) with Fourier transformations. The clock's rotation modulates the pentagons' angular orientation (<span class="math">α = JD × 0.05 + (i × 2π/N)</span>), the position vectors of quantum nodes (<span class="math">P = &#123;cos(θ + JD × 0.01), sin(θ + JD × 0.01)&#125;</span>), and the flow corridors that channel quantum entropy. Since all cryptographic validation depends on precise timing, this astronomical timepiece serves as the deterministic master reference ensuring token verification only occurs at precisely calculated temporal alignments (<span class="math">2π/5</span> radians offset from baseline).</p>
+        </div>
+    </div>
+    
+    <div id="quantum-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('quantum-popup')">×</div>
+            <h3 class="popup-title">Quantum Identity</h3>
+            <p class="popup-description">This visualization implements a non-repeating Penrose P3 tiling system with aperiodic 5-fold symmetry, mathematically proven to never repeat across infinite space while maintaining perfect quasicrystal ordering. The pattern consists of nested pentagons (ratio 1:φ) and pentagrams (interconnected by precise 2π/5 radian angles) generated through deterministic recursive subdivision with golden ratio scaling coefficients (φ = (1+√5)/2 = 1.6180339887...). Each pentagon undergoes rotation according to α = t × 0.05 + (i × 2π/N) radians, where t is the Julian time value received from the astronomical layer and i represents the pentagon index. Opacity follows the quantum superposition formula Φₐ = 0.15 + 0.1 × sin(0.3t + 0.2i), creating mathematically significant interference patterns with definable orthogonality properties that represent quantum decoherence mechanics with 5D Hilbert space projections.</p>
+            <p class="popup-description">At key Fibonacci-sequenced intersections, the visualization renders quantum resonance nodes with intensity I = 0.8 + celestialIntensity × (1-1/φ), where positions are calculated using the midpoint formula across adjacent Ammann bars: intersectionX = (x₁ + x₂)/2, intersectionY = (y₁ + y₂)/2. Each node's spatial coordinates are stored in a 128-bit quantum signature matrix and modulated by DE431 celestial positioning vectors. The central logarithmic spiral follows the mathematically rigorous parametric equation: r = 0.3R × e^(b×θ) where b = 0.2 and θ = t × 2π × turns, implementing a true equiangular spiral with growth coefficient b = ln(φ)/½π = 0.306349... This ensures consecutive spiral rotations maintain precise φ-ratio scaling properties (identical to mollusk shell growth patterns) that serve as cryptographic entropy anchors with a Kolmogorov complexity of O(n²).</p>
+            <p class="popup-description">Within the integrated identity system, this layer functions as the structural verification mapper, receiving astronomicalData inputs through quantum channels (temporalRhythm = JD % φ, celestialPositions[8] = {x,y,z,vx,vy,vz,mass,phase}, orbitalPhases = 2πk/n where k,n ∈ ℤ) and outputting: (1) nodePositions[n] = {x: (x-centerX)/radius, y: (y-centerY)/radius, angle: α} for each geometrically significant vertex, (2) resonancePoints[n] = {x, y} for intersection coordinates of golden angle (137.5°) placements, and (3) patternPhase = (time % 2π)/(2π) representing the current rotational state with Planck-scale precision (10^-43 seconds). These output parameters propagate to the token layer through quantum-entangled channels, establishing verification anchoring points with the crucial quantum structures serving as the cryptographic skeleton upon which token authentication depends, ensuring only the correct combination of all three synchronized layers produces mathematically valid verification signatures with 512-bit security strength.</p>
+        </div>
+    </div>
+    
+    <div id="harmonic-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('harmonic-popup')">×</div>
+            <h3 class="popup-title">𝜏 Harmonic</h3>
+            <p class="popup-description">This cryptographic token visualization implements a multi-stage verification system using four-stage zero-knowledge composition with post-quantum security. The base layer renders a parametric radial gradient with mathematically precise color stops at r = {0, 0.4R, 0.6R, 0.8R, 1.0R} with opacity values derived from quantum superposition (αcore = quantumData.patternPhase × 0.2 + 0.6). The primary visualization consists of a galactic-inspired 4-arm logarithmic spiral system following the modified Euler spiral equation: r = R × armFactor × e^(-0.2×θ) × (1-t^1.5×0.9), with precisely calculated spectral coloration per arm: Gold (212,175,55), Blue (97,218,251), Teal (32,197,197), and Light Gold (230,200,100), each with intensity I = 0.4 + quantumInfluence × 0.4. Verification points are distributed along the spiral arms at golden-ratio derived intervals (pointT = i × (1-1/φ) % 1 = i × 0.381966... % 1), creating a deterministic yet non-repeating pattern that can be cryptographically validated across multiple verification nodes with Lamport signature resistance properties.</p>
+            <p class="popup-description">The moving verification dot (representing the active security validator) implements a Julian Day-synchronized trajectory following the parametric equations: x = centerX + spiralRadius × cos(julianTime × 1.5), y = centerY + sin(julianTime × 1.5), with a 5-segment motion trail using the mathematically precise geometric progression trailFactor = 0.7^i, i ∈ [0,4]. The dot's outer glow employs Fresnel-based three-layer compositing (outerRadius = 8px, midRadius = 4px, coreRadius = 2px) with smooth color gradation curves and α = 1.0 at center to α = 0.0 at perimeter. Surrounding verification pulse waves propagate outward at velocities v = slowedTime × 15 pixels/s, with wave count determined by astronomical DE431 ephemeris data (maxWaves = min(5, astronomicalData.orbitalPhases.length/2 + 1)) and opacity modulated by quantum resonance calculations (α = max(0, 0.3-0.07i) × resonanceFactor) to create visually harmonious verification markers.</p>
+            <p class="popup-description">As the cryptographic verification endpoint in the integrated identity system, this token layer combines high-precision astronomical timing signals (±0.5ms) and quantum structural parameters to generate NIST-compliant 256-bit security signatures through a multi-layered composition process. The token receives critical inputs through secure channels: temporalFactor (modulating timeScale = 0.5 × (1+temporalFactor×0.2)), quantumInfluence (affecting baseRadius = 0.68maxR + quantumInfluence×0.04maxR), orbitalPhases (controlling pulse wave phaseOffset = orbitalPhase × waveSpacing × 0.5), and resonancePoints (determining opacity through resonanceFactor = √(x² + y²)). In a distributed multi-node implementation, this visual representation corresponds to the actual cryptographic verification protocol enabling validator nodes to synchronize astronomical positioning, quantum structural integrity, and token verification pathways through a mathematically rigorous shared-nothing architecture. The 99.9975% verification precision (equivalent to 512-bit entropy) represents the alignment accuracy required across distributed nodes for successful transaction validation, with sub-microsecond timing requirements that prevent even quantum computational attacks.</p>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="header-dropdown" id="headerDropdown">
+            <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 0.25rem 0.5rem;">
+            <div class="logo" style="display: block;">
+                <a href="javascript:window.location.reload();" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                    <img src="assets/identity.ico" alt="Identity" style="height: 42px; width: 42px; margin-right: 4px;">
+                </a>
+            </div>
+            <div class="header-data-grid" style="display: flex; gap: 0.4rem; flex-grow: 1; justify-content: center;">
+                <div class="data-card harmonic-card" style="cursor: pointer;" onclick="showPopup('token-popup')">
+                    <div class="data-title" style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 0.25rem;">𝜏 Harmonic</div>
+                    <div class="data-value" id="static-harmonic" style="width: 100%; padding: 0.25rem 0.5rem; display: block; text-align: center; background-color: rgba(10, 15, 30, 0.3); border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.1); font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500;">0.6213</div>
+                    <div class="data-value" id="data-token-value" style="display: none;">-</div>
+                </div>
+                
+                <div class="data-card rotation-card" style="cursor: pointer;" onclick="showPopup('rotation-popup')">
+                    <div class="data-title" style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 0.25rem;">Temporal Rotation</div>
+                    <div class="data-value" id="static-rotation" style="width: 100%; padding: 0.25rem 0.5rem; display: block; text-align: center; background-color: rgba(10, 15, 30, 0.3); border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.1); font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500;">217°</div>
+                    <div class="data-value" id="data-rotation" style="display: none;">-</div>
+                </div>
+                
+                <div class="data-card system-signature" style="cursor: pointer;" onclick="showPopup('julian-popup')">
+                    <div class="data-title" style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 0.25rem;">System Signature</div>
+                    <div class="data-value" id="static-system-signature" style="width: 100%; padding: 0.25rem 0.5rem; display: block; text-align: center; background-color: rgba(10, 15, 30, 0.3); border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.1); font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500;">
+                        <span id="dynamic-signature">Æ-7712-8813-C02F</span>
+                    </div>
+                    <div class="data-value" id="data-time" style="display: none;">-</div>
+                </div>
+                
+                <div class="data-card precision-card" style="cursor: pointer;" onclick="showPopup('precision-popup')">
+                    <div class="data-title" style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 0.25rem;">Verification Precision</div>
+                    <div class="data-value" id="static-precision" style="width: 100%; padding: 0.25rem 0.5rem; display: block; text-align: center; background-color: rgba(10, 15, 30, 0.3); border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.1); font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500;">0.0000%</div>
+                    <div id="verification-precision" style="display: none;">0.0000%</div>
+                </div>
+            </div>
+            <div class="header-nav" style="display: flex; gap: 1rem;">
+                <a href="index.html" class="return-link" title="Return to Timepiece">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
+        </div>
+        
+        <main class="main">
+            <!-- Direct children of main for grid layout to work properly -->
+            
+            <!-- Visualization panel for the three component cards (LEFT SIDE - grid-area: components) -->
+            <div class="visualization-panel">
+                <!-- Individual component visualizations -->
+                <div class="vis-card">
+                    <div class="canvas-container" id="astronomical-container" onclick="event.stopPropagation();" 
+                         onmouseover="this.querySelector('.component-button').style.opacity = '1';"
+                         onmouseout="this.querySelector('.component-button').style.opacity = '0';">
+                        <canvas id="astronomical-canvas"></canvas>
+                        <div class="component-button" style="position: absolute; top: 15px; left: 15px; z-index: 20; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.3); display: flex; flex-direction: column; align-items: flex-start; max-width: 180px; cursor: pointer; opacity: 0; pointer-events: auto; transition: opacity 0.3s ease;" onclick="showPopup('astronomical-popup');">
+                            <span style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 2px;">Astronomical Clock</span>
+                            <span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7);">DE431 Ephemeris</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vis-card">
+                    <div class="canvas-container" id="quantum-container" onclick="event.stopPropagation();"
+                         onmouseover="this.querySelector('.component-button').style.opacity = '1';"
+                         onmouseout="this.querySelector('.component-button').style.opacity = '0';">
+                        <canvas id="quantum-canvas"></canvas>
+                        <div class="component-button" style="position: absolute; top: 15px; left: 15px; z-index: 20; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.3); display: flex; flex-direction: column; align-items: flex-start; max-width: 180px; cursor: pointer; opacity: 0; pointer-events: auto; transition: opacity 0.3s ease;" onclick="showPopup('quantum-popup');">
+
+                            <span style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 2px;">Quantum Identity</span>
+                            <span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7);">Penrose Tiling</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vis-card">
+                    <div class="canvas-container" id="token-container" onclick="event.stopPropagation();"
+                         onmouseover="this.querySelector('.component-button').style.opacity = '1';"
+                         onmouseout="this.querySelector('.component-button').style.opacity = '0';">
+                        <canvas id="token-canvas"></canvas>
+                        <div class="component-button" style="position: absolute; top: 15px; left: 15px; z-index: 20; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 4px; border: 1px solid rgba(97, 218, 251, 0.3); display: flex; flex-direction: column; align-items: flex-start; max-width: 180px; cursor: pointer; opacity: 0; pointer-events: auto; transition: opacity 0.3s ease;" onclick="showPopup('harmonic-popup');">
+
+                            <span style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; color: var(--accent-blue); margin-bottom: 2px;">𝜏 Harmonic</span>
+                            <span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7);">System Signature</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Integrated visualization of all three security components (RIGHT SIDE - grid-area: integrated) -->
+            <div class="integrated-visualization" id="advanced-visualization" style="border: 1px solid rgba(97, 218, 251, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); position: relative;" 
+                 onmouseover="document.getElementById('ae-button').style.opacity = '1';" 
+                 onmouseout="document.getElementById('ae-button').style.opacity = '0';">
+            <!-- Title is now a separate clickable element for the popup -->
+                <div id="integrated-title" style="position: absolute; top: 10px; left: 0; right: 0; text-align: center; z-index: 15; cursor: pointer;" onclick="showPopup('integrated-popup')">
+                    <span style="background-color: rgba(10, 15, 30, 0.5); padding: 8px 15px; border-radius: 4px; font-family: 'Space Mono', monospace; letter-spacing: 0.5px; font-size: 14px; font-weight: 300; color: rgba(220, 240, 255, 0.85); border: 1px solid rgba(130, 180, 230, 0.2);">Integrated Identity System</span>
+                </div>
+                
+                <!-- Æ button with direct inline JavaScript - invisible by default -->
+                <div id="ae-button" style="position: absolute; top: 20px; right: 20px; z-index: 20; width: 36px; height: 36px; border-radius: 50%; background-color: rgba(20, 30, 50, 0.01); border: 1px solid rgba(140, 180, 210, 0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.3s ease;" 
+                    onclick="event.stopPropagation(); 
+                             var curr = localStorage.getItem('TAUDashboard_identityLabelsVisible'); 
+                             var next = curr === 'false' ? 'true' : 'false'; 
+                             localStorage.setItem('TAUDashboard_identityLabelsVisible', next); 
+                             localStorage.setItem('showLabels', next);
+                             
+                             // Toggle title visibility directly
+                             var titleEl = document.getElementById('integrated-title');
+                             if (titleEl) titleEl.style.display = next === 'true' ? 'block' : 'none';
+                             
+                             // Update global state for canvas redraw
+                             if (window.TAUDashboard) {
+                                 window.TAUDashboard.showLabels = next === 'true';
+                                 window.TAUDashboard.forceUpdate = true;
+                             }
+                             
+                             // Force canvas redraw without page reload
+                             var canvas = document.getElementById('integrated-canvas');
+                             if (canvas && canvas.getContext) {
+                                 var ctx = canvas.getContext('2d');
+                                 var token = window.currentToken || { julianDay: Date.now() / 86400000 + 2440587.5 };
+                                 if (window.renderIdentityVortex && ctx) {
+                                     window.renderIdentityVortex(ctx, canvas.width, canvas.height, token);
+                                 }
+                             }">
+                    <span style="font-family: 'Space Mono', monospace; font-size: 20px; color: rgba(200, 220, 240, 0.7);">Æ</span>
+                </div>
+                
+                <canvas id="integrated-canvas" style="width: 100%; height: 100%; display: block;" onclick="showPopup('integrated-popup');"></canvas>
+                
+                <!-- Core visualization layers -->
+                <div id="astronomical-layer" class="visualization-layer">
+                    <!-- Dynamic elements will be inserted here via JavaScript -->
+                </div>
+                
+                <div id="quantum-identity-layer" class="visualization-layer">
+                    <!-- Dynamic elements will be inserted here via JavaScript -->
+                </div>
+                
+                <!-- Component labels have been moved to individual components -->
+                <div id="component-labels" style="display: none;">
+                    <!-- Labels removed as they now exist as interactive elements in each component -->
+                </div>
+                
+                <!-- Overlay elements -->
+                <div class="vortex-element" style="width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                <div class="vortex-element" style="width: 400px; height: 400px; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                <div class="vortex-element" style="width: 500px; height: 500px; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                
+                <div class="token-element" style="width: 200px; height: 200px; top: 50%; left: 50%;"></div>
+                
+                <!-- Orbital paths -->
+                <div class="orbital-path" style="width: 300px; height: 300px; top: 50%; left: 50%;"></div>
+                <div class="orbital-path" style="width: 400px; height: 400px; top: 50%; left: 50%;"></div>
+                <div class="orbital-path" style="width: 500px; height: 500px; top: 50%; left: 50%;"></div>
+                <div class="orbital-path" style="width: 600px; height: 600px; top: 50%; left: 50%;"></div>
+                
+                <!-- Grid system -->
+                <div class="grid-line horizontal-grid" style="top: 25%; left: 0; right: 0;"></div>
+                <div class="grid-line horizontal-grid" style="top: 50%; left: 0; right: 0;"></div>
+                <div class="grid-line horizontal-grid" style="top: 75%; left: 0; right: 0;"></div>
+                <div class="grid-line vertical-grid" style="left: 25%; top: 0; bottom: 0;"></div>
+                <div class="grid-line vertical-grid" style="left: 50%; top: 0; bottom: 0;"></div>
+                <div class="grid-line vertical-grid" style="left: 75%; top: 0; bottom: 0;"></div>
+                
+                <!-- Controls - removed since we're using canvas-drawn Æ button instead -->
+                <div class="controls" style="display: none;">
+                    <button id="toggle-labels" class="control-button">Æ</button>
+                </div>
+            </div>
+            
+            <!-- Footer with identity icon and return link - at the bottom of the page only visible in mobile view -->
+            <div class="footer" onclick="toggleHeaderDropdown(event)" style="cursor: pointer;">
+                <a href="index.html" title="Return to Timepiece" style="display: flex; align-items: center; justify-content: center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    <span style="margin-left: 8px; font-size: 14px; color: var(--accent-blue);">Return</span>
+                </a>
+                <a href="javascript:window.location.reload();" title="Restart Identity System" style="display: flex; align-items: center; justify-content: center;">
+                    <img src="assets/identity.ico" alt="Identity" style="height: 42px; width: 42px;">
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // Function to toggle the header dropdown when footer is clicked
+    function toggleHeaderDropdown(event) {
+        // Prevent click events on links within footer from triggering this
+        if (event.target.closest('a')) {
+            return;
+        }
+        
+        const headerDropdown = document.getElementById('headerDropdown');
+        if (headerDropdown) {
+            // Check if header is currently active
+            if (headerDropdown.classList.contains('active')) {
+                // Header is visible, so hide it
+                headerDropdown.classList.remove('active');
+                document.body.classList.remove('header-visible');
+                document.body.classList.remove('header-fixed');
+            } else {
+                // Header is hidden, so show and fix it
+                headerDropdown.classList.add('active');
+                document.body.classList.add('header-fixed');
+            }
+        }
+        // Stop event propagation
+        event.stopPropagation();
+    }
+    
+    // Fix for canvas flickering - ensure requestAnimationFrame uses the most optimized version
+    window.requestAnimFrame = (function(){
+      return window.requestAnimationFrame       || 
+             window.webkitRequestAnimationFrame || 
+             window.mozRequestAnimationFrame    || 
+             window.oRequestAnimationFrame      || 
+             window.msRequestAnimationFrame     || 
+             function(callback){
+               window.setTimeout(callback, 1000 / 60);
+             };
+    })();
+    
+    // Animation tracking to prevent duplicate animation loops
+    const animationIDs = {
+        quantum: null,
+        token: null,
+        astronomical: null,
+        integrated: null,
+        main: null
+    };
+    
+    // Initialization flags to prevent multiple initializations
+    const initialized = {
+        quantum: false,
+        token: false,
+        astronomical: false,
+        integrated: false,
+        main: false
+    };
+    
+    // Make the initialized flags globally accessible
+    window.initialized = initialized;
+    
+    // Debug flag to trace initialization issues - helps diagnose flickering
+    const DEBUG_INIT = false;
+    
+    // Simple fallback for updateDashboardData
+    function updateDashboardData() {
+    }
+    
+    // Global function to toggle labels
+    function toggleLabels() {
+        window.TAUDashboard = window.TAUDashboard || {};
+        window.TAUDashboard.showLabels = !window.TAUDashboard.showLabels;
+        return window.TAUDashboard.showLabels;
+    }
+    
+    // IMPORTANT: We need to ensure each animation loop is only started once
+    // Global variable to track animation requests
+    let resizeTimeout;
+    
+    // Update labels button text on page load
+    // Function to update component labels and related elements visibility
+    function updateComponentVisibility() {
+        const showLabels = localStorage.getItem('showLabels') === 'true';
+        
+        // Update button text - now always shows "Æ" symbol
+        const labelsButton = document.getElementById('toggle-labels');
+        if (labelsButton) {
+            labelsButton.textContent = 'Æ';
+        }
+        
+        // Update the component labels visibility
+        const componentLabelsContainer = document.getElementById('component-labels');
+        if (componentLabelsContainer) {
+            componentLabelsContainer.style.display = showLabels ? 'flex' : 'none';
+        }
+        
+        // Legacy support for old elements
+        const integratedLabel = document.getElementById('integrated-system-label');
+        if (integratedLabel) {
+            integratedLabel.style.display = showLabels ? 'block' : 'none';
+        }
+        
+        const tauCoinLabel = document.getElementById('tau-coin-label');
+        if (tauCoinLabel) {
+            tauCoinLabel.style.display = showLabels ? 'block' : 'none';
+            // Copy value from header
+            const tokenValueEl = document.getElementById('data-token-value');
+            const tauCoinValueDisplay = document.getElementById('tau-coin-value-display');
+            if (tokenValueEl && tauCoinValueDisplay) {
+                tauCoinValueDisplay.textContent = tokenValueEl.textContent;
+            }
+        }
+    }
+    
+    window.addEventListener('load', function() {
+        // Initialize Ash mode if not set
+        if (!localStorage.getItem('ashMode')) {
+            localStorage.setItem('ashMode', '1');
+            console.log("Initialized to Ash1 mode");
+        }
+        
+        // Get current Ash mode
+        const ashMode = localStorage.getItem('ashMode');
+        console.log(`Page loaded in Ash${ashMode} mode`);
+        
+        // Update component visibility based on current setting
+        try {
+            updateComponentVisibility();
+        } catch(e) {
+            console.error("Error updating component visibility:", e);
+        }
+        
+        // Make sure the canvas is properly sized when everything is loaded
+        setTimeout(resizeIntegratedView, 100);
+    });
+
+    // Define the resize handler as a global function
+    function resizeIntegratedView() {
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        
+        const mainCanvas = document.getElementById('integrated-canvas'); 
+        if (mainCanvas) {
+            const mainContainer = document.querySelector('.integrated-visualization');
+            
+            // Calculate available space
+            const windowHeight = window.innerHeight;
+            const windowWidth = window.innerWidth;
+            
+            // Check if we're in the 4-stack view
+            const isStackedView = window.innerWidth <= 1200;
+            
+            // In 4-stack view, the dimensions are fixed and aspect ratio is enforced
+            if (isStackedView) {
+                // Let the CSS handle it - no adjustments needed
+                return;
+            }
+            
+            // For the expanded view, maintain a perfect square
+            const MIN_SIZE = 650;
+            
+            // Maximum size (prevents excessive scaling on large screens)
+            // 90% of window height/width or 1200px, whichever is smaller
+            const MAX_HEIGHT = Math.min(windowHeight * 0.9, 1200);
+            const MAX_WIDTH = Math.min(windowWidth * 0.9, 1200);
+            
+            // Calculate available space minus header and padding
+            const availableHeight = windowHeight - 120; // Header + padding
+            
+            // Get the actual visualization panel width for more accurate sizing
+            const visualizationPanel = document.querySelector('.visualization-panel');
+            const gap = 32; // 2rem gap converted to pixels
+            const panelWidth = visualizationPanel ? visualizationPanel.offsetWidth + gap : 501; // Add gap
+            const availableWidth = windowWidth - panelWidth; // Subtract width for components panel
+            
+            // Calculate optimal size for a perfect square
+            const optimalSize = Math.min(
+                Math.max(availableHeight, MIN_SIZE),  // At least MIN_SIZE but not more than available height
+                Math.min(availableWidth, MAX_WIDTH, MAX_HEIGHT) // Not exceeding max dimensions
+            );
+            
+            // Set dimensions for a perfect square
+            mainContainer.style.width = optimalSize + 'px';
+            mainContainer.style.height = optimalSize + 'px';
+            
+            // Force immediate reflow - this helps with size calculations
+            void mainContainer.offsetHeight;
+            
+            // Update canvas dimensions to match container's computed dimensions
+            // Ensure minimum size of 1px to avoid empty canvas errors
+            mainCanvas.width = Math.max(optimalSize, 1);
+            mainCanvas.height = Math.max(optimalSize, 1);
+            
+            // Initialize canvas with a background to avoid empty canvas
+            const ctx = mainCanvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = 'rgb(10, 15, 30)';
+                ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+            }
+            
+        } else {
+            console.error("Main canvas not found");
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize header dropdown functionality
+        const headerBar = document.getElementById('headerBar');
+        const headerDropdown = document.getElementById('headerDropdown');
+        const mainContent = document.querySelector('.main');
+        
+        // State tracking
+        let headerFixed = false;
+        
+        // Make sure we have the elements we need
+        if (!headerBar || !headerDropdown) {
+            console.error("Header elements not found");
+            return;
+        }
+        
+        // Direct DOM manipulation to show header on hover
+        function showHeader() {
+            // Only show if not already fixed
+            if (!headerFixed) {
+                headerDropdown.classList.add('active');
+                document.body.classList.add('header-visible');
+                document.body.classList.remove('header-fixed');
+            }
+        }
+        
+        // Direct DOM manipulation to hide header when hover ends
+        function hideHeader() {
+            // Only hide if not fixed
+            if (!headerFixed) {
+                headerDropdown.classList.remove('active');
+                document.body.classList.remove('header-visible');
+            }
+        }
+        
+        // Toggle fixed header state
+        function toggleFixedHeader(event) {
+            // Make sure we're not clicking a button or interactive element
+            if (event.target === headerDropdown || 
+                event.target.closest('.header-data-grid') === null) {
+                    
+                if (!headerFixed) {
+                    // Fix the header
+                    headerFixed = true;
+                    document.body.classList.add('header-fixed');
+                    document.body.classList.remove('header-visible');
+                }
+                
+                // Stop event propagation
+                event.stopPropagation();
+            }
+        }
+        
+        // Release fixed header when clicking on body
+        function releaseFixedHeader() {
+            if (headerFixed) {
+                headerFixed = false;
+                document.body.classList.remove('header-fixed');
+                
+                // If not currently hovering, also hide
+                if (!headerDropdown.matches(':hover')) {
+                    hideHeader();
+                }
+            }
+        }
+        
+        // Show header when hovering over the bar
+        headerBar.addEventListener('mouseenter', showHeader);
+        
+        // Also allow hovering on the dropdown itself to keep it open
+        headerDropdown.addEventListener('mouseenter', showHeader);
+        
+        // Hide when mouse leaves the dropdown
+        headerDropdown.addEventListener('mouseleave', hideHeader);
+        
+        // Click on header background to fix it in place
+        headerDropdown.addEventListener('click', toggleFixedHeader);
+        
+        // Click on body background to collapse fixed header
+        document.body.addEventListener('click', function(event) {
+            // Only handle clicks directly on the body or main content background
+            if (event.target === document.body || 
+                event.target === mainContent ||
+                (event.target.closest('.integrated-visualization') && 
+                 !event.target.closest('.control-button'))) {
+                releaseFixedHeader();
+            }
+        });
+        
+        // Initialize all visualizations directly
+        
+        // Global animation function for forcing visualizations
+        window.forceVisualize = function() {
+            console.log("Forcing visualization on all canvases");
+            const canvasIds = ['astronomical-canvas', 'quantum-canvas', 'token-canvas', 'integrated-canvas'];
+            
+            canvasIds.forEach(id => {
+                const canvas = document.getElementById(id);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        drawTestPattern(ctx, canvas.width, canvas.height, id);
+                    }
+                }
+            });
+        };
+        
+        // Helper for debugging - get element details
+        window.diagnoseElements = function() {
+            const elements = {
+                // Basic canvas elements
+                'astronomical-canvas': document.getElementById('astronomical-canvas'),
+                'quantum-canvas': document.getElementById('quantum-canvas'),
+                'token-canvas': document.getElementById('token-canvas'),
+                'integrated-canvas': document.getElementById('integrated-canvas'),
+                
+                // Container elements
+                'astronomical-container': document.getElementById('astronomical-container'),
+                'quantum-container': document.getElementById('quantum-container'),
+                'token-container': document.getElementById('token-container'),
+                'advanced-visualization': document.getElementById('advanced-visualization'),
+                
+                // Legacy elements
+                'integrated-system-label': document.getElementById('integrated-system-label'),
+                'tau-coin-label': document.getElementById('tau-coin-label'),
+                'component-labels': document.getElementById('component-labels')
+            };
+            
+            console.log("Element Diagnostics:");
+            Object.entries(elements).forEach(([name, el]) => {
+                console.log(`${name}: ${el ? 'Found' : 'NOT FOUND'}`);
+                if (el && el.tagName.toLowerCase() === 'canvas') {
+                    console.log(`  - Size: ${el.width}x${el.height}`);
+                    console.log(`  - Visible: ${el.style.display !== 'none'}`);
+                }
+            });
+        };
+        
+        // Helper function to draw a visible test pattern on each canvas
+        function drawTestPattern(ctx, width, height, canvasId) {
+            // Clear canvas
+            ctx.fillStyle = 'rgb(10, 15, 30)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw a simple pattern based on canvas ID
+            ctx.save();
+            
+            // Draw canvas ID text
+            ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(canvasId, width/2, 30);
+            
+            // Draw frame
+            ctx.strokeStyle = 'rgba(97, 218, 251, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, width-20, height-20);
+            
+            // Draw a unique pattern for each canvas
+            switch(canvasId) {
+                case 'astronomical-canvas':
+                    // Draw clock-like pattern
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(width/2, height/2, Math.min(width, height)/3, 0, Math.PI*2);
+                    ctx.stroke();
+                    
+                    // Draw clock hands
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(width/2, height/2);
+                    ctx.lineTo(width/2 + Math.cos(Math.PI/4) * Math.min(width, height)/4, 
+                              height/2 + Math.sin(Math.PI/4) * Math.min(width, height)/4);
+                    ctx.stroke();
+                    break;
+                    
+                case 'quantum-canvas':
+                    // Draw pentagon pattern
+                    ctx.strokeStyle = 'rgba(97, 218, 251, 0.7)';
+                    const radius = Math.min(width, height)/3;
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * Math.PI * 2 / 5) - Math.PI/2;
+                        const x = width/2 + Math.cos(angle) * radius;
+                        const y = height/2 + Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    break;
+                    
+                case 'token-canvas':
+                    // Draw spiral pattern
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.7)';
+                    ctx.beginPath();
+                    const centerX = width/2;
+                    const centerY = height/2;
+                    const maxRadius = Math.min(width, height)/3;
+                    for (let angle = 0; angle < 8*Math.PI; angle += 0.1) {
+                        const radius = maxRadius * angle / (8*Math.PI);
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+                        if (angle === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    break;
+                    
+                case 'integrated-canvas':
+                    // Draw combined patterns
+                    // Circle for astronomical
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(width/2, height/2, Math.min(width, height)/4, 0, Math.PI*2);
+                    ctx.stroke();
+                    
+                    // Pentagon for quantum
+                    ctx.strokeStyle = 'rgba(97, 218, 251, 0.4)';
+                    const pentRadius = Math.min(width, height)/5;
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * Math.PI * 2 / 5) - Math.PI/2;
+                        const x = width/2 + Math.cos(angle) * pentRadius;
+                        const y = height/2 + Math.sin(angle) * pentRadius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    
+                    // Small spiral for token
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+                    ctx.beginPath();
+                    for (let angle = 0; angle < 4*Math.PI; angle += 0.2) {
+                        const radius = Math.min(width, height)/8 * angle / (4*Math.PI);
+                        const x = width/2 + Math.cos(angle) * radius;
+                        const y = height/2 + Math.sin(angle) * radius;
+                        if (angle === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    break;
+            }
+            
+            ctx.restore();
+            console.log(`Drew test pattern for ${canvasId}`);
+        }
+        
+        // Pre-initialize all canvases to ensure they have valid dimensions
+        function initializeAllCanvases() {
+            // Set ashMode to 2 when initializeAllCanvases is called 
+            // This is the key to toggling between Ash1 and Ash2
+            localStorage.setItem('ashMode', '1');
+            // console.log("Switched to Ash2 mode");
+            
+            const canvasIds = ['astronomical-canvas', 'quantum-canvas', 'token-canvas', 'integrated-canvas'];
+            canvasIds.forEach(id => {
+                const canvas = document.getElementById(id);
+                if (canvas) {
+                    console.log(`Setting up canvas ${id}, parent:`, canvas.parentElement);
+                    // Ensure canvas has valid dimensions
+                    const parentWidth = canvas.parentElement ? canvas.parentElement.offsetWidth : 220;
+                    const parentHeight = canvas.parentElement ? canvas.parentElement.offsetHeight : 220;
+                    
+                    canvas.width = Math.max(1, parentWidth);
+                    canvas.height = Math.max(1, parentHeight);
+                    console.log(`Canvas ${id} dimensions: ${canvas.width}x${canvas.height}`);
+                    
+                    // Initialize with a background color
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.fillStyle = 'rgb(10, 15, 30)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Draw test patterns to ensure canvas is working
+                        drawTestPattern(ctx, canvas.width, canvas.height, id);
+                    }
+                } else {
+                    console.error(`Canvas ${id} not found`);
+                }
+            });
+        }
+        
+        // Initialize the canvases
+        initializeAllCanvases();
+        
+        // FORCE RESET all initialization flags to ensure fresh init
+        console.log("Forcing initialization reset...");
+        initialized.astronomical = false;
+        initialized.quantum = false;
+        initialized.token = false;
+        initialized.integrated = false;
+        
+        // Clear any existing animation frames to prevent duplicates
+        if (animationIDs.astronomical) cancelAnimationFrame(animationIDs.astronomical);
+        if (animationIDs.quantum) cancelAnimationFrame(animationIDs.quantum);
+        if (animationIDs.token) cancelAnimationFrame(animationIDs.token);
+        if (animationIDs.integrated) cancelAnimationFrame(animationIDs.integrated);
+        
+        // Reset animation IDs
+        animationIDs.astronomical = null;
+        animationIDs.quantum = null;
+        animationIDs.token = null;
+        animationIDs.integrated = null;
+        
+        // Make initialization functions globally accessible
+        window.initAstronomicalCanvas = initAstronomicalCanvas;
+        window.initQuantumCanvas = initQuantumCanvas;
+        window.initTokenCanvas = initTokenCanvas;
+        window.initIntegratedCanvas = initIntegratedCanvas;
+        window.drawTestPattern = drawTestPattern;
+        window.forceVisualize = forceVisualize;
+        
+    // Initialize in sequence to respect the data flow:
+        // 1. First the astronomical (foundation)
+        // 2. Then quantum (depends on astronomical)
+        // 3. Then token (depends on both)
+        // 4. Finally the integrated view (depends on all three)
+        console.log("Starting initialization sequence...");
+        
+        // First pre-initialize all canvases to ensure valid dimensions
+        console.log("Pre-initializing all canvases...");
+        initializeAllCanvases();
+        
+        // Initialize each component with longer delays to ensure proper loading
+        setTimeout(function() {
+            console.log("Initializing astronomical canvas...");
+            try {
+                const result = initAstronomicalCanvas();
+                console.log("Astronomical initialization result:", result);
+            } catch(err) {
+                console.error("Error initializing astronomical canvas:", err);
+            }
+            
+            setTimeout(function() {
+                console.log("Initializing quantum canvas...");
+                try {
+                    const result = initQuantumCanvas();
+                    console.log("Quantum initialization result:", result);
+                } catch(err) {
+                    console.error("Error initializing quantum canvas:", err);
+                }
+                
+                setTimeout(function() {
+                    console.log("Initializing token canvas...");
+                    try {
+                        const result = initTokenCanvas();
+                        console.log("Token initialization result:", result);
+                    } catch(err) {
+                        console.error("Error initializing token canvas:", err);
+                    }
+                    
+                    setTimeout(function() {
+                        console.log("Initializing integrated canvas...");
+                        try {
+                            const result = initIntegratedCanvas();
+                            console.log("Integrated initialization result:", result);
+                        } catch(err) {
+                            console.error("Error initializing integrated canvas:", err);
+                        }
+                        
+                        // Do one more resize after all canvases are initialized
+                        console.log("Resizing integrated view...");
+                        resizeIntegratedView();
+                        
+                        // Update dashboard data (if function exists)
+                        if (typeof updateDashboardData === 'function') {
+                            console.log("Updating dashboard data...");
+                            updateDashboardData();
+                        }
+                        console.log("Initialization sequence complete!");
+                        
+                        // Force visibility of all canvases
+                        document.querySelectorAll('canvas').forEach(canvas => {
+                            canvas.style.display = 'block';
+                            console.log("Canvas forced visible:", canvas.id);
+                        });
+                    }, 250);
+                }, 250);
+            }, 250);
+        }, 250);
+        
+        // Labels are now toggled directly via the button's onclick attribute
+        
+        // Remove old resize handler and install new ones
+        window.removeEventListener('resize', resizeAllCanvases);
+        
+        // Function to handle resize with throttling
+        const handleResize = function() {
+            if (resizeTimeout) {
+                clearTimeout(resizeTimeout);
+            }
+            
+            // Apply resize immediately for shrinking windows
+            if (window.innerWidth < window.lastWidth || window.innerHeight < window.lastHeight) {
+                resizeIntegratedView();
+                // Store new dimensions
+                window.lastWidth = window.innerWidth;
+                window.lastHeight = window.innerHeight;
+            }
+            
+            // Still use timeout for any resize to catch the final state
+            resizeTimeout = setTimeout(function() {
+                resizeIntegratedView();
+                // Store new dimensions
+                window.lastWidth = window.innerWidth;
+                window.lastHeight = window.innerHeight;
+            }, 100);
+        };
+        
+        // Store initial dimensions
+        window.lastWidth = window.innerWidth;
+        window.lastHeight = window.innerHeight;
+        
+        // Add event listeners for both resize and orientation change
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        
+        // Initial resize right away
+        resizeIntegratedView();
+        
+        // CRITICAL: We need to ensure there's only ONE data update mechanism
+        // Completely clear any previous timers to prevent glitching numbers
+        if (window.dataUpdateInterval) {
+            clearInterval(window.dataUpdateInterval);
+            window.dataUpdateInterval = null;
+        }
+        
+        // Clear any other interval timers that might be running
+        for (let i = 1; i < 1000; i++) {
+            window.clearInterval(i);
+        }
+        
+        // Initialize data updates with a single controlled interval
+        window.dataUpdateInterval = simulateDataUpdates();
+    });
+    
+    // This is the resize handler that was being called previously
+    function resizeAllCanvases() {
+        // Clear any pending resize timeout
+        if (resizeTimeout) {
+            clearTimeout(resizeTimeout);
+        }
+        
+        // Set a timeout to prevent multiple rapid resizes
+        resizeTimeout = setTimeout(function() {
+            // Main astronomical canvas
+            const mainCanvas = document.getElementById('astronomical-canvas');
+            if (mainCanvas) {
+                const mainContainer = document.querySelector('.vis-card');
+                mainCanvas.width = mainContainer.offsetWidth;
+                mainCanvas.height = mainContainer.offsetHeight;
+            } else {
+                console.error('Resize error: astronomical-canvas not found');
+            }
+            
+            // We've identified the problem - resizing was triggering reinitializations
+            // Component canvases will now be left alone during resize
+        }, 100);
+    }
+    
+    // Functions to initialize and run the astronomical clock visualization
+    
+    // Just a wrapper function that calls the implementation in dashboard.js
+    function initAstronomicalCanvas(canvas, token) {
+        console.log("initAstronomicalCanvas called");
+        
+        // Check which Ash mode we're in
+        const ashMode = localStorage.getItem('ashMode') || '1';
+        console.log(`Initializing astronomical canvas in Ash${ashMode} mode`);
+        
+        // The main implementation is in dashboard.js in the renderAstronomicalSync function
+        // This function exists just to provide the hook that dashboard.js calls
+        
+        // Get the astronomical container
+        const container = document.getElementById('astronomical-container');
+        if (!container) {
+            console.error("Astronomical container not found");
+            return;
+        }
+        
+        // Mark as initialized to prevent double initialization
+        initialized.astronomical = true;
+        
+        // Make sure canvas is visible and centered
+        canvas.style.display = 'block';
+        canvas.style.margin = 'auto';
+        
+        // Use offscreen canvas to reduce flickering
+        if (!ctx._astronomicalOffscreen) {
+            ctx._astronomicalOffscreen = document.createElement('canvas');
+            ctx._astronomicalOffscreen.width = canvas.width;
+            ctx._astronomicalOffscreen.height = canvas.height;
+            ctx._astronomicalOffscreenCtx = ctx._astronomicalOffscreen.getContext('2d', { alpha: false });
+            
+            // Fill initial background to prevent empty canvas
+            const offCtx = ctx._astronomicalOffscreenCtx;
+            offCtx.fillStyle = 'rgb(10, 15, 30)';
+            offCtx.fillRect(0, 0, ctx._astronomicalOffscreen.width, ctx._astronomicalOffscreen.height);
+        }
+        
+        // Animation parameters
+        let time = 0;
+        
+        // Update the astronomical canvas - wrapper function that calls implementation in dashboard.js
+        function updateAstronomicalCanvas(canvas, token) {
+            // This is just a stub that exists to be called by dashboard.js
+            // The actual implementation is in dashboard.js within renderAstronomicalSync
+            console.log("updateAstronomicalCanvas called - delegating to dashboard.js implementation");
+            
+            // Nothing to do here - the main implementation is in dashboard.js
+        }
+        
+        // Single animation function that will be called repeatedly
+        function draw() {
+            try {
+                // Create token with current astronomical data
+                const now = new Date();
+                const julianDay = (now.getTime() / 86400000) + 2440587.5;
+                
+                // Create token structure required by renderAstronomicalSync
+                const token = {
+                    timestamp: now.getTime(),
+                    julianDay: julianDay,
+                    time: (julianDay % 1) * 24, // Time of day in hours (0-24)
+                    security: {
+                        harmonics: [0.5, 0.75, 0.25], // Default harmonic values
+                        position: { x: 0.5, y: 0.5 }  // Default position
+                    }
+                };
+                
+                // Call the dashboard.js renderAstronomicalSync function if available
+                if (typeof renderAstronomicalSync === 'function') {
+                    renderAstronomicalSync(container, token);
+                    console.log("Used renderAstronomicalSync from dashboard.js");
+                } 
+                // Fallback if renderAstronomicalSync is not available
+                else {
+                    console.warn("renderAstronomicalSync not found, using fallback visualization");
+                    
+                    const offCtx = ctx._astronomicalOffscreenCtx;
+                    
+                    // Clear offscreen canvas with solid background first
+                    offCtx.fillStyle = 'rgb(10, 15, 30)';
+                    offCtx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Add label in upper-left corner if enabled
+                    const showLabels = localStorage.getItem('showLabels') === 'true';
+                    if (showLabels) {
+                        const julianDayFormatted = julianDay.toFixed(5);
+                        
+                        offCtx.font = '12px monospace';
+                        offCtx.fillStyle = 'rgba(120, 180, 255, 0.9)';
+                        offCtx.textAlign = 'left';
+                        offCtx.fillText(`1. ASTRONOMICAL SYNCHRONIZATION (JD: ${julianDayFormatted})`, 10, 20);
+                    }
+                    
+                    // Draw watch face
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    
+                    // Outer ring
+                    offCtx.beginPath();
+                    offCtx.arc(centerX, centerY, 90, 0, Math.PI * 2);
+                    offCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    offCtx.lineWidth = 2;
+                    offCtx.stroke();
+                    
+                    // Draw hour markers
+                    for (let i = 0; i < 12; i++) {
+                        const angle = i * Math.PI / 6;
+                        const markerLength = i % 3 === 0 ? 10 : 5;
+                        const outerX = centerX + Math.cos(angle) * 90;
+                        const outerY = centerY + Math.sin(angle) * 90;
+                        const innerX = centerX + Math.cos(angle) * (90 - markerLength);
+                        const innerY = centerY + Math.sin(angle) * (90 - markerLength);
+                        
+                        offCtx.beginPath();
+                        offCtx.moveTo(outerX, outerY);
+                        offCtx.lineTo(innerX, innerY);
+                        offCtx.strokeStyle = i % 3 === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)';
+                        offCtx.lineWidth = i % 3 === 0 ? 2 : 1;
+                        offCtx.stroke();
+                    }
+                    
+                    // Hour hand - makes one full rotation per day (julianDay)
+                    const julianDayInt = Math.floor(julianDay);
+                    const julianFraction = julianDay - julianDayInt;
+                    const hourAngle = julianFraction * Math.PI * 2;
+                    const hourHandLength = 55;
+                    const hourHandX = centerX + Math.cos(hourAngle - Math.PI/2) * hourHandLength;
+                    const hourHandY = centerY + Math.sin(hourAngle - Math.PI/2) * hourHandLength;
+                    
+                    offCtx.beginPath();
+                    offCtx.moveTo(centerX, centerY);
+                    offCtx.lineTo(hourHandX, hourHandY);
+                    offCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    offCtx.lineWidth = 1.5;
+                    offCtx.stroke();
+                    
+                    // Minute hand
+                    const minuteAngle = (julianFraction * 12) % 1 * Math.PI * 2;
+                    const minuteHandLength = 75;
+                    const minuteHandX = centerX + Math.cos(minuteAngle - Math.PI/2) * minuteHandLength;
+                    const minuteHandY = centerY + Math.sin(minuteAngle - Math.PI/2) * minuteHandLength;
+                    
+                    offCtx.beginPath();
+                    offCtx.moveTo(centerX, centerY);
+                    offCtx.lineTo(minuteHandX, minuteHandY);
+                    offCtx.strokeStyle = 'rgba(97, 218, 251, 0.8)';
+                    offCtx.lineWidth = 1;
+                    offCtx.stroke();
+                    
+                    // Center dot
+                    offCtx.beginPath();
+                    offCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+                    offCtx.fillStyle = 'rgba(97, 218, 251, 1.0)';
+                    offCtx.fill();
+                    
+                    // Copy from offscreen canvas to main canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(offCtx.canvas, 0, 0);
+                }
+            } catch (e) {
+                console.error("Error in astronomical canvas animation:", e);
+            }
+            
+            // Update time (slower for smoother animation)
+            time += 0.005;
+            
+            // Continue animation loop
+            animationIDs.astronomical = requestAnimationFrame(draw);
+        }
+        
+        // Start the animation ONCE - this is crucial
+        animationIDs.astronomical = requestAnimationFrame(draw);
+
+        // Add event listener to toggle description on hover
+        // Use the existing container variable from line 1778
+        const description = container.querySelector('.description-overlay');
+        
+        container.addEventListener('mouseenter', function() {
+            if (description) description.style.display = 'block';
+        });
+        
+        container.addEventListener('mouseleave', function() {
+            if (description) description.style.display = 'none';
+        });
+    }
+    
+    function drawCosmicBackground(ctx, width, height, time) {
+        // Safety check to ensure context and dimensions are valid
+        if (!ctx || width <= 0 || height <= 0) {
+            console.error("Invalid context or dimensions in drawCosmicBackground");
+            return;
+        }
+        
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Draw a base background to ensure the canvas isn't empty
+        ctx.fillStyle = 'rgb(10, 15, 30)';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Draw stars in the background
+        for (let i = 0; i < 100; i++) {
+            // Create pseudo-random but deterministic star positions
+            const seed = i * 13;
+            const angle = (i / 100) * Math.PI * 2;
+            const distance = Math.sqrt(seed % 100) / 10 * Math.min(width, height) * 0.4;
+            
+            const x = centerX + Math.cos(angle) * distance;
+            const y = centerY + Math.sin(angle) * distance;
+            
+            // Twinkling effect with subtle time-based variation
+            const twinkle = 0.5 + Math.sin(time + i) * 0.3;
+            const size = (0.5 + (seed % 10) / 20) * twinkle;
+            
+            // Draw star with glow
+            ctx.beginPath();
+            ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Star core
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fill();
+        }
+        
+        // Draw 7 orbital paths
+        for (let i = 1; i <= 7; i++) {
+            const radius = 30 + i * 15; // Scaled orbital distances
+            
+            // Draw orbital path
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(97, 218, 251, ${0.15 - i * 0.015})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Calculate orbital period scaled by golden ratio (φ = 1.618...)
+            const PHI = 1.618033988749895;
+            const periodFactor = 1 / (1 + (i * 0.2) / PHI);
+            
+            // Calculate position with orbital period factored in
+            const angle = (time * periodFactor) + (i * Math.PI / 3.5);
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            // Draw planet with color based on position in system
+            const planetSize = 2 + (i % 3);
+            
+            // Planet glow
+            ctx.beginPath();
+            ctx.arc(x, y, planetSize * 2, 0, Math.PI * 2);
+            const planetGlow = ctx.createRadialGradient(x, y, 0, x, y, planetSize * 2);
+            
+            // Define planet colors loosely based on our solar system
+            let planetColor = 'rgba(97, 218, 251, 0.8)'; // Default blue
+            
+            switch(i % 7) {
+                case 1: planetColor = 'rgba(255, 255, 220, 0.8)'; break; // Sun (yellowish)
+                case 2: planetColor = 'rgba(200, 200, 200, 0.8)'; break; // Mercury (grey)
+                case 3: planetColor = 'rgba(255, 220, 180, 0.8)'; break; // Venus (pale orange)
+                case 4: planetColor = 'rgba(70, 120, 210, 0.8)'; break;  // Earth (blue)
+                case 5: planetColor = 'rgba(210, 80, 40, 0.8)'; break;   // Mars (red)
+                case 6: planetColor = 'rgba(255, 200, 100, 0.8)'; break; // Jupiter (orange)
+                case 0: planetColor = 'rgba(200, 180, 150, 0.8)'; break; // Saturn (tan)
+            }
+            
+            planetGlow.addColorStop(0, planetColor);
+            planetGlow.addColorStop(1, 'rgba(97, 218, 251, 0)');
+            ctx.fillStyle = planetGlow;
+            ctx.fill();
+            
+            // Planet body
+            ctx.beginPath();
+            ctx.arc(x, y, planetSize, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fill();
+        }
+    }
+    
+    // Only initialize quantum canvas once globally
+    function initQuantumCanvas() {
+        // Check if already initialized to prevent double initialization
+        if (initialized.quantum) {
+            return;
+        }
+        
+        // Mark as initialized first thing
+        initialized.quantum = true;
+        
+        const canvas = document.getElementById('quantum-canvas');
+        if (!canvas) return;
+        
+        // Get context and set up canvas
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // Set dimensions only once
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
+        
+        // Use offscreen canvas to reduce flickering
+        if (!ctx._offscreenCanvas) {
+            ctx._offscreenCanvas = document.createElement('canvas');
+            ctx._offscreenCanvas.width = canvas.width;
+            ctx._offscreenCanvas.height = canvas.height;
+            ctx._offscreenCtx = ctx._offscreenCanvas.getContext('2d', { alpha: false });
+        }
+        
+        // Animation parameters
+        let time = 1000;
+        
+        // Actual animation function - simplified to reduce overhead
+        function animate() {
+            const offCtx = ctx._offscreenCtx;
+            // Clear offscreen canvas with solid background first
+            offCtx.fillStyle = 'rgb(10, 15, 30)';
+            offCtx.fillRect(0, 0, offCtx.canvas.width, offCtx.canvas.height);
+            
+            // Draw the visualization
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Add label in upper-left corner if enabled
+            const showLabels = localStorage.getItem('showLabels') === 'true';
+            if (showLabels) {
+                offCtx.font = '12px monospace';
+                offCtx.fillStyle = 'rgba(120, 180, 255, 0.9)';
+                offCtx.textAlign = 'left';
+                offCtx.fillText('2. QUANTUM IDENTITY', 10, 20);
+            }
+            
+            // Draw pentagonal Penrose tiling pattern - enlarged to match largest ring
+            drawPenroseTiling(offCtx, centerX, centerY, Math.min(centerX, centerY) * 0.95, time * 0.2, 5);
+            
+            // Draw quantum identity patterns on top
+            drawQuantumIdentity(offCtx, centerX, centerY, time);
+            
+            // Copy from offscreen canvas to visible canvas in one operation
+            ctx.drawImage(offCtx.canvas, 0, 0);
+            
+            // Update time with fixed increment
+            time += 0.004;
+            
+            // Continue the animation loop only if this is still the active animation
+            animationIDs.quantum = requestAnimationFrame(animate);
+        }
+        
+        // Start the animation loop (only once!)
+        if (animationIDs.quantum) {
+            cancelAnimationFrame(animationIDs.quantum);
+        }
+        animationIDs.quantum = requestAnimationFrame(animate);
+    }
+    
+    // Only initialize token canvas once globally
+    function initTokenCanvas() {
+        // Check if already initialized to prevent double initialization
+        if (initialized.token) {
+            return;
+        }
+        
+        // Mark as initialized first thing
+        initialized.token = true;
+        
+        const canvas = document.getElementById('token-canvas');
+        if (!canvas) return;
+        
+        // Get context and set up canvas
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // Set dimensions only once
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
+        
+        // Use offscreen canvas to reduce flickering
+        if (!ctx._tokenOffscreenCanvas) {
+            ctx._tokenOffscreenCanvas = document.createElement('canvas');
+            ctx._tokenOffscreenCanvas.width = canvas.width;
+            ctx._tokenOffscreenCanvas.height = canvas.height;
+            ctx._tokenOffscreenCtx = ctx._tokenOffscreenCanvas.getContext('2d', { alpha: false });
+        }
+        
+        // Animation parameters
+        let time = 1000;
+        
+        // Calculate initial Julian day for high-precision timing
+        const initialJulianDay = (Date.now() / 86400000) + 2440587.5;
+        
+        // Actual animation function - simplified to reduce overhead
+        function animate() {
+            const offCtx = ctx._tokenOffscreenCtx;
+            // Clear offscreen canvas with solid background first
+            offCtx.fillStyle = 'rgb(10, 15, 30)';
+            offCtx.fillRect(0, 0, offCtx.canvas.width, offCtx.canvas.height);
+            
+            // Draw the visualization
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Add label in upper-left corner if enabled
+            const showLabels = localStorage.getItem('showLabels') === 'true';
+            if (showLabels) {
+                offCtx.font = '12px monospace';
+                offCtx.fillStyle = 'rgba(120, 180, 255, 0.9)';
+                offCtx.textAlign = 'left';
+                offCtx.fillText('3. ASH TOKEN', 10, 20);
+            }
+            
+            // Calculate current Julian Day for high-precision timing
+            const currentJulianDay = (Date.now() / 86400000) + 2440587.5;
+            // Use microsecond precision from Julian Day
+            const julianFraction = (currentJulianDay - Math.floor(currentJulianDay));
+            
+            // Draw the multi-colored spiral
+            // Note: We'll use the time parameter, but the white dot will use Julian time for smoother motion
+            drawColoredSpiral(offCtx, centerX, centerY, Math.min(centerX, centerY) * 0.7, time * 0.2, 0.5);
+            
+            // Draw token visualization - includes outer token elements but NOT the central dot
+            drawTokenVisualization(offCtx, centerX, centerY, time, null, null, false);
+            
+            // Draw moving white dot with Julian Day-based timing (smoother and slightly faster)
+            // The multiplier 1.5 makes it rotate faster than before
+            drawMovingDot(offCtx, centerX, centerY, Math.min(centerX, centerY) * 0.5, julianFraction * 100 * 1.5, 0.5);
+            
+            // Copy from offscreen canvas to visible canvas in one operation
+            ctx.drawImage(offCtx.canvas, 0, 0);
+            
+            // Update time with fixed increment
+            time += 0.004;
+            
+            // Continue the animation loop only if this is still the active animation
+            animationIDs.token = requestAnimationFrame(animate);
+        }
+        
+        // Start the animation loop (only once!)
+        if (animationIDs.token) {
+            cancelAnimationFrame(animationIDs.token);
+        }
+        animationIDs.token = requestAnimationFrame(animate);
+    }
+    
+    // Initialize the integrated view canvas that displays all three components
+    function initIntegratedCanvas() {
+        console.log("==========================================");
+        console.log("INITIALIZING INTEGRATED IDENTITY SYSTEM");
+        console.log("==========================================");
+        
+        // Check which Ash mode we're in
+        const ashMode = localStorage.getItem('ashMode') || '1';
+        console.log(`Initializing integrated canvas in Ash${ashMode} mode`);
+        
+        // Clear any existing animation
+        if (animationIDs.integrated) {
+            console.log("Canceling existing integrated animation frame:", animationIDs.integrated);
+            cancelAnimationFrame(animationIDs.integrated);
+            animationIDs.integrated = null;
+        }
+        
+        // Reset initialization flag
+        initialized.integrated = false;
+        
+        // Check for advanced visualization
+        const advancedVisualization = document.getElementById('advanced-visualization');
+        console.log("Advanced Visualization element:", advancedVisualization);
+        
+        const canvas = document.getElementById('integrated-canvas');
+        if (!canvas) {
+            console.error("Could not find integrated-canvas element!");
+            return;
+        }
+        
+        console.log("Integrated canvas found, dimensions:", canvas.width, "x", canvas.height);
+        
+        // Ensure canvas is visible
+        canvas.style.display = 'block';
+        
+        // Mark as initialized 
+        initialized.integrated = true;
+        console.log("Integrated canvas initialization marked as complete");
+        
+        // If we're in Ash1 mode, do minimal initialization and return early
+        if (ashMode === '1') {
+            console.log("Using minimal initialization for Ash1 mode");
+            // Just do basic initialization of the canvas with a test pattern
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                drawTestPattern(ctx, canvas.width, canvas.height, 'integrated-canvas');
+            }
+            return true;
+        }
+        
+        // If we reach here, we're in Ash2 mode and should use the full initialization
+        
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // Set canvas dimensions - ensure proper size based on container
+        if (canvas.parentElement) {
+            canvas.width = Math.max(canvas.parentElement.offsetWidth, 1);
+            canvas.height = Math.max(canvas.parentElement.offsetHeight, 1);
+        }
+        
+        // Create offscreen canvas for double buffering
+        if (!ctx._integratedOffscreen) {
+            ctx._integratedOffscreen = document.createElement('canvas');
+            ctx._integratedOffscreen.width = canvas.width;
+            ctx._integratedOffscreen.height = canvas.height;
+            ctx._integratedOffscreenCtx = ctx._integratedOffscreen.getContext('2d', { alpha: false });
+        }
+        
+        // Animation parameters
+        let time = 1000;
+        
+        function animate() {
+            // Check if canvas is still in the DOM and visible
+            if (!document.body.contains(canvas) || canvas.style.display === 'none') {
+                console.warn("Integrated canvas no longer visible, stopping animation");
+                return;
+            }
+            
+            // Get current Julian Day for high-precision timing
+            const currentJulianDay = (Date.now() / 86400000) + 2440587.5;
+            
+            // Clear the canvas with a background fill
+            ctx.fillStyle = 'rgb(10, 15, 30)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            try {
+                // Draw integrated visualization
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = Math.min(centerX, centerY) * 0.9;
+                
+                // Get time-based rotation value from the security status
+                const rotation = window.calculatedRotation || 0;
+                
+                // Draw astronomical layer elements
+                const astronomicalCanvas = document.getElementById('astronomical-canvas');
+                if (astronomicalCanvas) {
+                    try {
+                        console.log("Drawing astronomical layer to integrated view");
+                        ctx.globalAlpha = 0.8;
+                        
+                        // Draw clock-like pattern as fallback if drawing the canvas fails
+                        try {
+                            ctx.drawImage(
+                                astronomicalCanvas, 
+                                centerX - radius * 0.6, centerY - radius * 0.6, 
+                                radius * 1.2, radius * 1.2
+                            );
+                        } catch (e) {
+                            console.warn("Failed to draw astronomical canvas, using fallback");
+                            
+                            // Draw a clock-like fallback
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                            ctx.beginPath();
+                            ctx.arc(centerX, centerY, radius * 0.4, 0, Math.PI*2);
+                            ctx.stroke();
+                            
+                            // Draw clock hands
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(centerX, centerY);
+                            const angle = rotation * Math.PI / 180;
+                            ctx.lineTo(
+                                centerX + Math.cos(angle) * radius * 0.3, 
+                                centerY + Math.sin(angle) * radius * 0.3
+                            );
+                            ctx.stroke();
+                        }
+                        
+                        ctx.globalAlpha = 1.0;
+                    } catch (e) {
+                        console.error('Error drawing astronomical layer:', e);
+                    }
+                } else {
+                    console.warn("Astronomical canvas not available for integrated view");
+                    
+                    // Draw a clock-like fallback even if the canvas doesn't exist
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius * 0.4, 0, Math.PI*2);
+                    ctx.stroke();
+                    
+                    // Draw clock hands
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    const angle = rotation * Math.PI / 180;
+                    ctx.lineTo(
+                        centerX + Math.cos(angle) * radius * 0.3, 
+                        centerY + Math.sin(angle) * radius * 0.3
+                    );
+                    ctx.stroke();
+                }
+                
+                // Draw quantum layer elements
+                const quantumCanvas = document.getElementById('quantum-canvas');
+                if (quantumCanvas) {
+                    try {
+                        console.log("Drawing quantum layer to integrated view");
+                        ctx.globalAlpha = 0.7;
+                        
+                        try {
+                            ctx.drawImage(
+                                quantumCanvas, 
+                                centerX - radius * 0.7, centerY - radius * 0.7,
+                                radius * 1.4, radius * 1.4
+                            );
+                        } catch (e) {
+                            console.warn("Failed to draw quantum canvas, using fallback");
+                            
+                            // Draw pentagon pattern as fallback
+                            ctx.strokeStyle = 'rgba(97, 218, 251, 0.7)';
+                            const pentRadius = radius * 0.5;
+                            ctx.beginPath();
+                            for (let i = 0; i < 5; i++) {
+                                const angle = (i * Math.PI * 2 / 5) - Math.PI/2 + (rotation * Math.PI / 180);
+                                const x = centerX + Math.cos(angle) * pentRadius;
+                                const y = centerY + Math.sin(angle) * pentRadius;
+                                if (i === 0) ctx.moveTo(x, y);
+                                else ctx.lineTo(x, y);
+                            }
+                            ctx.closePath();
+                            ctx.stroke();
+                        }
+                        
+                        ctx.globalAlpha = 1.0;
+                    } catch (e) {
+                        console.error('Error drawing quantum layer:', e);
+                    }
+                } else {
+                    console.warn("Quantum canvas not available for integrated view");
+                    
+                    // Draw pentagon pattern as fallback
+                    ctx.strokeStyle = 'rgba(97, 218, 251, 0.7)';
+                    const pentRadius = radius * 0.5;
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * Math.PI * 2 / 5) - Math.PI/2 + (rotation * Math.PI / 180);
+                        const x = centerX + Math.cos(angle) * pentRadius;
+                        const y = centerY + Math.sin(angle) * pentRadius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+                
+                // Draw token layer elements
+                const tokenCanvas = document.getElementById('token-canvas');
+                if (tokenCanvas) {
+                    try {
+                        console.log("Drawing token layer to integrated view");
+                        ctx.globalAlpha = 0.9;
+                        ctx.drawImage(
+                            tokenCanvas, 
+                            centerX - radius * 0.5, centerY - radius * 0.5, 
+                            radius, radius
+                        );
+                        ctx.globalAlpha = 1.0;
+                    } catch (e) {
+                        console.error('Error drawing token layer:', e);
+                    }
+                } else {
+                    console.warn("Token canvas not available for integrated view");
+                }
+                
+                // Draw synchronization indicator
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation * Math.PI / 180);
+                
+                // Draw verification indicator
+                ctx.fillStyle = 'rgba(97, 218, 251, 0.8)';
+                ctx.beginPath();
+                ctx.arc(0, -radius * 0.8, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw verification path
+                ctx.strokeStyle = 'rgba(97, 218, 251, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Add text label to make it clear this is working
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Integrated Identity System', centerX, 30);
+                
+                ctx.restore();
+                
+                // Update window TAUDashboard if needed
+                if (!window.TAUDashboard) {
+                    window.TAUDashboard = {};
+                }
+                
+                // Define updateRotation function
+                window.TAUDashboard.updateRotation = function(rotation) {
+                    window.calculatedRotation = rotation;
+                    if (window.securityStatus && window.securityStatus.quantumIdentity) {
+                        window.securityStatus.quantumIdentity.rotationValue = rotation;
+                        window.securityStatus.quantumIdentity.updateTime = Date.now();
+                    }
+                };
+                
+                // Define updateJulianDay function
+                window.TAUDashboard.updateJulianDay = function(julianDay) {
+                    window.currentJulianDay = julianDay;
+                    if (window.securityStatus && window.securityStatus.astronomicalSync) {
+                        window.securityStatus.astronomicalSync.julianDay = julianDay;
+                        window.securityStatus.astronomicalSync.updateTime = Date.now();
+                    }
+                };
+                
+                // Store synchronization data
+                window.securityStatus = window.securityStatus || {
+                    astronomicalSync: { julianDay: currentJulianDay, updateTime: Date.now() },
+                    quantumIdentity: { rotationValue: rotation, updateTime: Date.now() },
+                    tokenValue: document.getElementById('data-token-value')?.textContent || "950.00"
+                };
+                
+            } catch (e) {
+                console.error('Error in integrated canvas animation:', e);
+            }
+            
+            // Continue the animation loop only if this is still the active animation
+            animationIDs.integrated = requestAnimationFrame(animate);
+        }
+        
+        // Start the animation loop (only once!)
+        if (animationIDs.integrated) {
+            cancelAnimationFrame(animationIDs.integrated);
+        }
+        animationIDs.integrated = requestAnimationFrame(animate);
+        
+        // Return success
+        return true;
+    }
+    
+    function drawQuantumIdentity(ctx, centerX, centerY, time, astronomicalData) {
+        // Use offscreen canvas to reduce flickering
+        if (!ctx._offscreenCanvas) {
+            ctx._offscreenCanvas = document.createElement('canvas');
+            ctx._offscreenCanvas.width = ctx.canvas.width;
+            ctx._offscreenCanvas.height = ctx.canvas.height;
+            ctx._offscreenCtx = ctx._offscreenCanvas.getContext('2d', { alpha: false });
+        }
+        
+        const offCtx = ctx._offscreenCtx;
+        // Clear offscreen canvas with solid background first
+        offCtx.fillStyle = 'rgb(10, 15, 30)';
+        offCtx.fillRect(0, 0, offCtx.canvas.width, offCtx.canvas.height);
+        
+        // Initialize quantum data output
+        const quantumData = {
+            nodePositions: [],
+            patternPhase: 0,
+            resonancePoints: []
+        };
+        
+        // Use astronomical data to influence the quantum patterns
+        const temporalInfluence = astronomicalData ? astronomicalData.temporalRhythm : 0.5;
+        
+        // Use a consistent time factor throughout the function, modified by astronomical data
+        const slowedTime = time * 0.2 * (1 + temporalInfluence * 0.3);
+        
+        // Calculate base radius, influenced by astronomical timing
+        const radius = Math.min(centerX, centerY) * (0.65 + temporalInfluence * 0.1);
+        
+        // Number of segments influenced by astronomical data
+        const segments = astronomicalData ? 
+            Math.max(8, Math.min(12, 8 + Math.floor(astronomicalData.orbitalPhases?.length || 0))) : 10;
+        
+        // Draw a pentagon-based Penrose tiling pattern first - this is the key visual component
+        // that needs to be preserved according to the QUANTUM-SEC documentation
+        // Use enlarged size to match the largest ring
+        drawPenroseTiling(offCtx, centerX, centerY, radius * 0.95, slowedTime, 5);
+        
+        // Draw a stable background grid on top
+        offCtx.strokeStyle = 'rgba(97, 218, 251, 0.15)';
+        offCtx.lineWidth = 0.5;
+        
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            offCtx.beginPath();
+            offCtx.moveTo(centerX, centerY);
+            offCtx.lineTo(x, y);
+            offCtx.stroke();
+        }
+        
+        // Now draw the dynamic pattern with motion influenced by astronomical data
+        offCtx.strokeStyle = 'rgba(97, 218, 251, 0.4)';
+        offCtx.lineWidth = 1;
+        
+        // Store pattern phase for data output
+        quantumData.patternPhase = slowedTime % (Math.PI * 2) / (Math.PI * 2);
+        
+        for (let i = 0; i < segments; i++) {
+            // Apply orbital phases from astronomical data if available
+            const orbitalOffset = astronomicalData && astronomicalData.orbitalPhases && 
+                astronomicalData.orbitalPhases[i % astronomicalData.orbitalPhases.length] || 0;
+            
+            // Dynamic angles influenced by astronomical data
+            const angle1 = (i / segments) * Math.PI * 2 + slowedTime + (orbitalOffset * Math.PI);
+            const angle2 = ((i + 5) / segments) * Math.PI * 2 + slowedTime;
+            
+            const x1 = centerX + Math.cos(angle1) * radius * 0.9;
+            const y1 = centerY + Math.sin(angle1) * radius * 0.9;
+            
+            const x2 = centerX + Math.cos(angle2) * radius * 0.9;
+            const y2 = centerY + Math.sin(angle2) * radius * 0.9;
+            
+            offCtx.beginPath();
+            offCtx.moveTo(x1, y1);
+            offCtx.lineTo(x2, y2);
+            offCtx.stroke();
+            
+            // Calculate intersection points (resonance points)
+            if (i % 2 === 0) {
+                const resonanceX = (x1 + x2) / 2;
+                const resonanceY = (y1 + y2) / 2;
+                quantumData.resonancePoints.push({
+                    x: (resonanceX - centerX) / radius,
+                    y: (resonanceY - centerY) / radius
+                });
+            }
+        }
+        
+        // Draw geometric nodes with a glow effect, influenced by astronomical positions
+        for (let i = 0; i < segments; i++) {
+            // Apply celestial position influence if available
+            const celestialOffset = astronomicalData && astronomicalData.celestialPositions && 
+                astronomicalData.celestialPositions[i % astronomicalData.celestialPositions.length];
+            
+            let nodeOffsetX = 0;
+            let nodeOffsetY = 0;
+            
+            if (celestialOffset) {
+                nodeOffsetX = (celestialOffset.x - 0.5) * radius * 0.1;
+                nodeOffsetY = (celestialOffset.y - 0.5) * radius * 0.1;
+            }
+            
+            const angle = (i / segments) * Math.PI * 2 + slowedTime * 0.5;
+            const x = centerX + Math.cos(angle) * radius + nodeOffsetX;
+            const y = centerY + Math.sin(angle) * radius + nodeOffsetY;
+            
+            // Store node positions for data output
+            quantumData.nodePositions.push({
+                x: (x - centerX) / radius,
+                y: (y - centerY) / radius,
+                angle: angle
+            });
+            
+            // Add a glow effect, intensity influenced by astronomical data
+            const intensity = celestialOffset ? celestialOffset.intensity : 0.8;
+            const glow = offCtx.createRadialGradient(x, y, 0, x, y, 6);
+            glow.addColorStop(0, `rgba(32, 197, 197, ${intensity})`);
+            glow.addColorStop(1, 'rgba(32, 197, 197, 0)');
+            
+            offCtx.beginPath();
+            offCtx.arc(x, y, 6, 0, Math.PI * 2);
+            offCtx.fillStyle = glow;
+            offCtx.fill();
+            
+            // Draw solid node on top
+            offCtx.beginPath();
+            offCtx.arc(x, y, 2.5, 0, Math.PI * 2);
+            offCtx.fillStyle = 'rgba(32, 197, 197, 0.9)';
+            offCtx.fill();
+        }
+        
+        // Copy from offscreen canvas to visible canvas in one operation
+        ctx.drawImage(offCtx.canvas, 0, 0);
+        
+        // Return quantum data for next component
+        return quantumData;
+    }
+    
+    // Helper function to draw Penrose-inspired pentagonal tiling pattern
+    // Based on 5-fold symmetry with golden ratio (φ) scaling as described in QUANTUM-SEC.md
+    function drawPenroseTiling(ctx, centerX, centerY, radius, time, count) {
+        const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio (φ)
+        const pentagons = count * 5; // 5-fold symmetry
+        
+        // Add subtle background gradient for depth
+        const bgGradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+        
+        bgGradient.addColorStop(0, 'rgba(10, 30, 60, 0.4)');
+        bgGradient.addColorStop(0.7, 'rgba(10, 20, 40, 0.2)');
+        bgGradient.addColorStop(1, 'rgba(5, 10, 30, 0)');
+        
+        ctx.fillStyle = bgGradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw connection grid (subtle background)
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+            const angle = i * Math.PI / 5;
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(
+                centerX + Math.cos(angle) * radius,
+                centerY + Math.sin(angle) * radius
+            );
+        }
+        ctx.strokeStyle = 'rgba(97, 218, 251, 0.07)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        // Draw multiple pentagonal shapes with golden ratio scaling
+        for (let i = 0; i < pentagons; i++) {
+            // Use phi-based scaling for nested pentagons
+            const scale = 0.2 + (1 - 1/phi) * (i / pentagons);
+            const innerRadius = radius * scale;
+            const outerRadius = innerRadius * phi * 0.5;
+            
+            // Rotation based on time and pentagon index - more pronounced rotation
+            const rotation = time * 0.05 + (i * Math.PI * 2 / pentagons);
+            
+            // Oscillate opacity based on time for subtle pulsing
+            const opacity = 0.15 + 0.1 * Math.sin(time * 0.3 + i * 0.2);
+            
+            // Alternate between pentagon and pentagram (for Penrose-like tiling)
+            if (i % 2 === 0) {
+                // Draw pentagon
+                ctx.beginPath();
+                const points = [];
+                
+                for (let j = 0; j < 5; j++) {
+                    const angle = rotation + j * Math.PI * 2 / 5;
+                    const x = centerX + Math.cos(angle) * innerRadius;
+                    const y = centerY + Math.sin(angle) * innerRadius;
+                    
+                    points.push({x, y});
+                    
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                
+                // Create more vibrant glow effect for pentagons
+                ctx.strokeStyle = `rgba(32, 197, 197, ${opacity})`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+                
+                // Add subtle fill for more visibility
+                if (i % 6 === 0) {
+                    ctx.fillStyle = `rgba(32, 197, 197, ${opacity * 0.15})`;
+                    ctx.fill();
+                }
+                
+                // Add subtle glow at vertices for key pentagons
+                if (i % 3 === 0) {
+                    for (const point of points) {
+                        const glowRadius = 2 + Math.sin(time + i) * 0.5;
+                        const glow = ctx.createRadialGradient(
+                            point.x, point.y, 0,
+                            point.x, point.y, glowRadius
+                        );
+                        
+                        glow.addColorStop(0, `rgba(32, 197, 197, ${opacity * 2})`);
+                        glow.addColorStop(1, 'rgba(32, 197, 197, 0)');
+                        
+                        ctx.fillStyle = glow;
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+            } else {
+                // Draw pentagram (five-pointed star)
+                ctx.beginPath();
+                const starPoints = [];
+                
+                for (let j = 0; j < 5; j++) {
+                    const angle1 = rotation + j * Math.PI * 2 / 5;
+                    const angle2 = rotation + ((j + 2) % 5) * Math.PI * 2 / 5;
+                    
+                    const x1 = centerX + Math.cos(angle1) * outerRadius;
+                    const y1 = centerY + Math.sin(angle1) * outerRadius;
+                    
+                    const x2 = centerX + Math.cos(angle2) * outerRadius;
+                    const y2 = centerY + Math.sin(angle2) * outerRadius;
+                    
+                    starPoints.push({x: x1, y: y1});
+                    
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    
+                    // Calculate and store intersection points for resonance nodes
+                    if (j === 0) {
+                        const intersectionX = (x1 + x2) / 2;
+                        const intersectionY = (y1 + y2) / 2;
+                        
+                        // Add these as resonance points on key stars
+                        if (i % 4 === 0) {
+                            const resonanceGlow = ctx.createRadialGradient(
+                                intersectionX, intersectionY, 0,
+                                intersectionX, intersectionY, 3
+                            );
+                            
+                            resonanceGlow.addColorStop(0, `rgba(97, 218, 251, ${opacity * 3})`);
+                            resonanceGlow.addColorStop(1, 'rgba(97, 218, 251, 0)');
+                            
+                            ctx.fillStyle = resonanceGlow;
+                            ctx.beginPath();
+                            ctx.arc(intersectionX, intersectionY, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+                
+                // Enhanced star appearance with blue theme and subtle luminosity
+                const blueIntensity = 0.4 + 0.2 * Math.sin(time * 0.2 + i * 0.3);
+                ctx.strokeStyle = `rgba(97, 218, 251, ${opacity * blueIntensity})`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+                
+                // Add faint glow at vertices for key stars
+                if (i % 5 === 0) {
+                    for (const point of starPoints) {
+                        const vertexGlow = ctx.createRadialGradient(
+                            point.x, point.y, 0,
+                            point.x, point.y, 2
+                        );
+                        
+                        vertexGlow.addColorStop(0, `rgba(160, 230, 255, ${opacity * 2})`); 
+                        vertexGlow.addColorStop(1, 'rgba(97, 218, 251, 0)');
+                        
+                        ctx.fillStyle = vertexGlow;
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        // Add central golden ratio spiral to emphasize Penrose mathematics
+        if (radius > 40) {  // Only for larger renderings
+            const spiralTurns = 5;
+            const spiralSteps = 200;
+            
+            ctx.beginPath();
+            for (let i = 0; i < spiralSteps; i++) {
+                const t = i / spiralSteps;
+                const radialDist = radius * 0.3 * Math.pow(phi, t * 2 * spiralTurns / Math.PI);
+                const angle = t * 2 * Math.PI * spiralTurns;
+                
+                const x = centerX + Math.cos(angle) * radialDist;
+                const y = centerY + Math.sin(angle) * radialDist;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            const spiralGradient = ctx.createLinearGradient(
+                centerX - radius * 0.3, centerY - radius * 0.3,
+                centerX + radius * 0.3, centerY + radius * 0.3
+            );
+            
+            spiralGradient.addColorStop(0, 'rgba(97, 218, 251, 0.5)');
+            spiralGradient.addColorStop(0.5, 'rgba(32, 197, 197, 0.3)');
+            spiralGradient.addColorStop(1, 'rgba(97, 218, 251, 0.1)');
+            
+            ctx.strokeStyle = spiralGradient;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+        }
+        
+        // Add central node with bright glow
+        const centerGlow = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius * 0.15
+        );
+        
+        centerGlow.addColorStop(0, 'rgba(32, 197, 197, 0.8)');
+        centerGlow.addColorStop(0.3, 'rgba(97, 218, 251, 0.3)');
+        centerGlow.addColorStop(1, 'rgba(97, 218, 251, 0)');
+        
+        ctx.fillStyle = centerGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add central core
+        ctx.fillStyle = 'rgba(200, 240, 255, 0.9)';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    function drawTokenVisualization(ctx, centerX, centerY, time, astronomicalData, quantumData, drawWhiteDot = true) {
+        // Use offscreen canvas to reduce flickering
+        if (!ctx._tokenOffscreenCanvas) {
+            ctx._tokenOffscreenCanvas = document.createElement('canvas');
+            ctx._tokenOffscreenCanvas.width = ctx.canvas.width;
+            ctx._tokenOffscreenCanvas.height = ctx.canvas.height;
+            ctx._tokenOffscreenCtx = ctx._tokenOffscreenCanvas.getContext('2d', { alpha: false });
+        }
+        
+        const offCtx = ctx._tokenOffscreenCtx;
+        // Clear offscreen canvas with solid background first
+        offCtx.fillStyle = 'rgb(10, 15, 30)';
+        offCtx.fillRect(0, 0, offCtx.canvas.width, offCtx.canvas.height);
+        
+        // Use a radius that fits within the canvas
+        const maxRadius = Math.min(centerX, centerY) * 0.8;
+        
+        // Use temporal data from astronomical component if available
+        const temporalFactor = astronomicalData ? astronomicalData.temporalRhythm : 0.5;
+        
+        // Adjust time factor based on astronomical temporal rhythm
+        const timeScale = 0.5 * (1 + temporalFactor * 0.2);
+        const slowedTime = time * timeScale;
+        
+        // Adjust token radius based on quantum pattern phase
+        const quantumInfluence = quantumData ? quantumData.patternPhase : 0.5;
+        const baseRadius = maxRadius * (0.68 + quantumInfluence * 0.04);
+        const tokenRadius = baseRadius + Math.sin(slowedTime) * (maxRadius * 0.02);
+        
+        // Draw an outer stable ring, position influenced by astronomical data
+        const ringOffset = astronomicalData ? 
+            astronomicalData.temporalRhythm * 5 : 10;
+        
+        offCtx.beginPath();
+        offCtx.arc(centerX, centerY, baseRadius + ringOffset, 0, Math.PI * 2);
+        offCtx.strokeStyle = 'rgba(32, 197, 197, 0.15)';
+        offCtx.lineWidth = 1;
+        offCtx.stroke();
+        
+        // Create gradient with colors influenced by quantum data
+        const gradient = offCtx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, baseRadius
+        );
+        
+        // Adjust gradient colors based on quantum pattern phase
+        const coreIntensity = quantumData ? 0.6 + quantumData.patternPhase * 0.2 : 0.7;
+        const midIntensity = quantumData ? 0.4 + quantumData.patternPhase * 0.2 : 0.5;
+        
+        gradient.addColorStop(0, `rgba(212, 175, 55, ${coreIntensity})`);
+        gradient.addColorStop(0.4, `rgba(212, 175, 55, ${midIntensity})`);
+        gradient.addColorStop(0.6, 'rgba(97, 218, 251, 0.4)');
+        gradient.addColorStop(0.8, 'rgba(32, 197, 197, 0.2)');
+        gradient.addColorStop(1, 'rgba(32, 197, 197, 0.0)');
+        
+        // Draw token with anti-aliasing
+        offCtx.beginPath();
+        offCtx.arc(centerX, centerY, tokenRadius, 0, Math.PI * 2);
+        offCtx.fillStyle = gradient;
+        offCtx.fill();
+        
+        // Add a stable inner core, size influenced by astronomical temporal data
+        const innerRadius = maxRadius * (0.28 + temporalFactor * 0.04);
+        const innerGradient = offCtx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, innerRadius
+        );
+        
+        innerGradient.addColorStop(0, 'rgba(242, 215, 95, 0.8)');
+        innerGradient.addColorStop(0.7, 'rgba(212, 175, 55, 0.6)');
+        innerGradient.addColorStop(1, 'rgba(212, 175, 55, 0.0)');
+        
+        offCtx.beginPath();
+        offCtx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+        offCtx.fillStyle = innerGradient;
+        offCtx.fill();
+        
+        // Draw multi-colored spiral pattern
+        drawColoredSpiral(offCtx, centerX, centerY, innerRadius * 1.2, slowedTime, quantumInfluence);
+        
+        // Number of waves influenced by astronomical data
+        const maxWaves = astronomicalData ? 
+            Math.max(3, Math.min(5, Math.floor((astronomicalData.orbitalPhases?.length || 0) / 2) + 1)) : 4;
+            
+        // Wave spacing influenced by quantum data
+        const spacingFactor = quantumData ? 1 + ((quantumData.resonancePoints?.length || 0) / 10) * 0.2 : 1;
+        const waveSpacing = (maxRadius * 1.2) / (maxWaves * spacingFactor);
+        
+        // Draw pulse waves with properties modulated by astronomical and quantum data
+        for (let i = 0; i < maxWaves; i++) {
+            // Get orbital phase from astronomical data if available
+            const orbitalPhase = astronomicalData && astronomicalData.orbitalPhases && 
+                astronomicalData.orbitalPhases[i % astronomicalData.orbitalPhases.length];
+            // Phase offset based on astronomical data
+            const phaseOffset = orbitalPhase ? orbitalPhase * waveSpacing * 0.5 : 0;
+            
+            // Calculate pulse radius with movement influenced by astronomical timing
+            let pulseRadius = ((slowedTime * 15) % waveSpacing) + (i * waveSpacing) + phaseOffset;
+            
+            // Only draw if within visible range
+            if (pulseRadius <= maxRadius * 1.2) {
+                offCtx.beginPath();
+                offCtx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+                
+                // Opacity modulated by quantum resonance if available
+                const quantumResonance = quantumData && quantumData.resonancePoints && 
+                    quantumData.resonancePoints[i % quantumData.resonancePoints.length];
+                const resonanceFactor = quantumResonance ? 
+                    Math.sqrt(quantumResonance.x * quantumResonance.x + quantumResonance.y * quantumResonance.y) : 1;
+                
+                // Dynamic opacity based on wave position and quantum resonance
+                const opacity = Math.max(0, 0.3 - (i * 0.07)) * resonanceFactor;
+                offCtx.strokeStyle = `rgba(212, 175, 55, ${opacity})`;
+                
+                // Line width influenced by quantum data
+                const widthFactor = quantumData ? 1 + quantumData.patternPhase * 0.3 : 1;
+                offCtx.lineWidth = Math.max(0.5, (1.5 - (i * 0.3)) * widthFactor);
+                offCtx.stroke();
+            }
+        }
+        
+        // Number of shimmer points influenced by quantum node count
+        const shimmerCount = quantumData ? 
+            Math.max(8, Math.min(16, (quantumData.nodePositions?.length || 0))) : 12;
+        
+        // Add shimmer effect with positions influenced by quantum node positions
+        for (let i = 0; i < shimmerCount; i++) {
+            // Use quantum node positions if available
+            let shimmerOffsetX = 0;
+            let shimmerOffsetY = 0;
+            
+            if (quantumData && quantumData.nodePositions && quantumData.nodePositions[i % quantumData.nodePositions.length]) {
+                const node = quantumData.nodePositions[i % quantumData.nodePositions.length];
+                shimmerOffsetX = node.x * innerRadius * 0.2;
+                shimmerOffsetY = node.y * innerRadius * 0.2;
+            }
+            
+            // Base angle modulated by astronomical rhythm if available
+            const angleOffset = astronomicalData ? astronomicalData.temporalRhythm * Math.PI * 0.5 : 0;
+            const shimmerAngle = (i / shimmerCount) * Math.PI * 2 + slowedTime * 1.2 + angleOffset;
+            
+            // Distance from center modulated by quantum pattern phase
+            const distFactor = quantumData ? 0.6 + quantumData.patternPhase * 0.2 : 0.6;
+            const shimmerDist = innerRadius * (distFactor + Math.sin(slowedTime * 2 + i) * 0.1);
+            
+            // Calculate position with quantum node influence
+            const x = centerX + Math.cos(shimmerAngle) * shimmerDist + shimmerOffsetX;
+            const y = centerY + Math.sin(shimmerAngle) * shimmerDist + shimmerOffsetY;
+            
+            // Shimmer size influenced by astronomical data if available
+            const sizeBase = astronomicalData ? 
+                2.5 * (0.8 + astronomicalData.temporalRhythm * 0.4) : 2.5;
+                
+            // Vary shimmer size more dramatically
+            const shimmerSize = sizeBase + Math.sin(slowedTime * 3 + i * 0.7) * 1.5;
+            
+            // Create a glow effect for each shimmer point
+            const glow = offCtx.createRadialGradient(x, y, 0, x, y, shimmerSize * 2);
+            glow.addColorStop(0, 'rgba(242, 215, 95, 0.8)');
+            glow.addColorStop(1, 'rgba(242, 215, 95, 0)');
+            
+            // Draw glow
+            offCtx.beginPath();
+            offCtx.arc(x, y, shimmerSize * 2, 0, Math.PI * 2);
+            offCtx.fillStyle = glow;
+            offCtx.fill();
+            
+            // Draw core of shimmer
+            offCtx.beginPath();
+            offCtx.arc(x, y, shimmerSize, 0, Math.PI * 2);
+            offCtx.fillStyle = 'rgba(242, 215, 95, 0.75)';
+            offCtx.fill();
+        }
+        
+        // Only draw the moving white dot if explicitly requested
+        // This helps avoid duplicate dots when called from different contexts
+        if (drawWhiteDot) {
+            drawMovingDot(offCtx, centerX, centerY, innerRadius, slowedTime, quantumInfluence);
+        }
+        
+        // Copy from offscreen canvas to visible canvas in one operation
+        ctx.drawImage(offCtx.canvas, 0, 0);
+        
+        // Return the innerRadius for potential use by the caller
+        return innerRadius;
+    }
+    
+    // Helper function to draw a multi-colored spiral
+    function drawColoredSpiral(ctx, centerX, centerY, radius, time, intensity) {
+        const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio (φ)
+        const turns = 5; // Increase number of spiral turns for more visual complexity
+        const steps = 200; // More segments for smoother curves
+        const growthFactor = 0.2; // Controls how quickly spiral expands - defined at top level
+        
+        // Create a subtle glow background for the spiral area
+        const bgGlow = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+        
+        bgGlow.addColorStop(0, `rgba(212, 175, 55, ${0.1 * intensity})`);
+        bgGlow.addColorStop(0.6, `rgba(97, 218, 251, ${0.05 * intensity})`);
+        bgGlow.addColorStop(1, 'rgba(32, 197, 197, 0)');
+        
+        ctx.fillStyle = bgGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw more detailed spiral arms in multiple colors
+        // Add more arms for richer visual effect
+        const armCount = 4;
+        
+        for (let c = 0; c < armCount; c++) {
+            ctx.beginPath();
+            
+            // Use golden ratio based offset for more harmonious spiral separation
+            const phaseOffset = c * Math.PI * 2 * (1 - 1/phi) + time * 0.3;
+            
+            // Calculate line width based on arm index - thicker primary arms
+            const lineWidth = (c < 2) ? 1.5 : 0.8;
+            ctx.lineWidth = lineWidth;
+            
+            // Use different colors for each spiral arm with better contrast
+            let colorIntensity = 0.4 + intensity * 0.4;
+            let color;
+            
+            switch (c % 4) {
+                case 0: color = `rgba(212, 175, 55, ${colorIntensity})`; break; // Gold
+                case 1: color = `rgba(97, 218, 251, ${colorIntensity * 0.9})`; break; // Blue
+                case 2: color = `rgba(32, 197, 197, ${colorIntensity * 0.8})`; break; // Teal
+                case 3: color = `rgba(230, 200, 100, ${colorIntensity * 0.7})`; break; // Light gold
+            }
+            
+            // Create length variance in spiral arms
+            const armLengthFactor = (c === 0) ? 1.0 : 0.7 + (c * 0.08);
+            
+            // Create a color gradient along the spiral path
+            const spiralGradient = ctx.createLinearGradient(
+                centerX - radius, centerY - radius,
+                centerX + radius, centerY + radius
+            );
+            
+            if (c % 2 === 0) {
+                spiralGradient.addColorStop(0, color);
+                spiralGradient.addColorStop(1, `rgba(97, 218, 251, ${colorIntensity * 0.7})`);
+            } else {
+                spiralGradient.addColorStop(0, `rgba(32, 197, 197, ${colorIntensity * 0.8})`);
+                spiralGradient.addColorStop(1, color);
+            }
+            
+            ctx.strokeStyle = spiralGradient;
+            
+            // Generate spiral arm points with logarithmic spiral formula
+            for (let i = 0; i < steps; i++) {
+                // Use logarithmic spiral formula (r = a*e^(b*θ))
+                // This creates the characteristic spiral that follows the golden ratio growth
+                const t = i / steps;
+                const angle = t * turns * Math.PI * 2;
+                
+                // Spiral radius grows logarithmically
+                const r = radius * armLengthFactor * Math.exp(growthFactor * -angle) * (1 - Math.pow(t, 1.5) * 0.9);
+                
+                // Apply time-based rotation for animation
+                const animatedAngle = angle + phaseOffset;
+                
+                const x = centerX + Math.cos(animatedAngle) * r;
+                const y = centerY + Math.sin(animatedAngle) * r;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            // Stroke the spiral path
+            ctx.stroke();
+            
+            // Add subtle glow effect to primary arms
+            if (c < 2) {
+                ctx.globalAlpha = 0.3 * intensity;
+                ctx.lineWidth = lineWidth * 2;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+            
+            // Add small bright points along the spiral at golden ratio intervals for visual interest
+            if (c === 0) {
+                for (let i = 0; i < 8; i++) {
+                    const pointT = i * (1 - 1/phi) % 1; // Golden ratio spacing
+                    const angle = pointT * turns * Math.PI * 2 + phaseOffset;
+                    
+                    // Points get smaller toward the end of the spiral
+                    const pointSize = 1.8 * (1 - pointT * 0.7);
+                    
+                    // Points follow the spiral path
+                    const r = radius * armLengthFactor * Math.exp(growthFactor * -angle) * (1 - Math.pow(pointT, 1.5) * 0.9);
+                    
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    
+                    // Draw a small bright point
+                    const pointGlow = ctx.createRadialGradient(x, y, 0, x, y, pointSize * 2);
+                    pointGlow.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                    pointGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    
+                    ctx.fillStyle = pointGlow;
+                    ctx.beginPath();
+                    ctx.arc(x, y, pointSize * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add small bright core
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, pointSize * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Add central glow
+        const centerGlow = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius * 0.3
+        );
+        
+        centerGlow.addColorStop(0, `rgba(212, 175, 55, ${0.3 * intensity})`);
+        centerGlow.addColorStop(0.7, `rgba(97, 218, 251, ${0.1 * intensity})`);
+        centerGlow.addColorStop(1, 'rgba(32, 197, 197, 0)');
+        
+        ctx.fillStyle = centerGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Helper function to draw a moving white dot (specifically requested in requirements)
+    function drawMovingDot(ctx, centerX, centerY, radius, time, intensity) {
+        const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio (φ)
+        
+        // Use golden ratio to determine dot position for mathematically significant motion
+        // This creates a phyllotaxis pattern when viewed over time
+        const goldenAngle = Math.PI * 2 * (1 - 1/phi);
+        
+        // Calculate dot position with a more complex path that combines:
+        // 1. Logarithmic spiral motion (golden ratio based)
+        // 2. Oscillation in radius
+        // 3. Time-based rotation
+        
+        // Base rotation speed
+        const rotationSpeed = 1.2;
+        
+        // Oscillation in radius creates pulsing motion
+        const radiusOscillation = 0.15 * Math.sin(time * 1.3);
+        
+        // For the dot, use a logarithmic spiral path that follows golden ratio
+        const spiralFactor = 0.1;
+        const spiralTime = time * rotationSpeed;
+        const spiralRadius = radius * (0.4 + radiusOscillation) * (0.7 + intensity * 0.3);
+        
+        // Calculate position on spiral
+        const x = centerX + spiralRadius * Math.cos(spiralTime);
+        const y = centerY + spiralRadius * Math.sin(spiralTime);
+        
+        // Create a motion trail effect
+        const trailSegments = 5;
+        const trailFadeRate = 0.7;
+        
+        for (let i = 0; i < trailSegments; i++) {
+            // Trail segments follow the dot with time delay
+            const trailTime = spiralTime - (i * 0.2);
+            const trailX = centerX + spiralRadius * Math.cos(trailTime);
+            const trailY = centerY + spiralRadius * Math.sin(trailTime);
+            
+            // Trails get smaller and more transparent
+            const trailFactor = Math.pow(trailFadeRate, i);
+            const trailSize = (5 + Math.sin(time * 3) * 1.5) * trailFactor;
+            const trailOpacity = 0.6 * trailFactor;
+            
+            // Draw trail segment glow
+            const trailGlow = ctx.createRadialGradient(
+                trailX, trailY, 0, 
+                trailX, trailY, trailSize * 1.5
+            );
+            
+            trailGlow.addColorStop(0, `rgba(255, 255, 255, ${trailOpacity})`);
+            trailGlow.addColorStop(0.5, `rgba(200, 240, 255, ${trailOpacity * 0.5})`);
+            trailGlow.addColorStop(1, 'rgba(100, 180, 255, 0)');
+            
+            ctx.fillStyle = trailGlow;
+            ctx.beginPath();
+            ctx.arc(trailX, trailY, trailSize * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw an outer glow for the main dot
+        const outerGlowSize = 8 + Math.sin(time * 3) * 2;
+        const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, outerGlowSize);
+        outerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        outerGlow.addColorStop(0.5, 'rgba(200, 240, 255, 0.4)');
+        outerGlow.addColorStop(1, 'rgba(100, 180, 255, 0)');
+        
+        ctx.fillStyle = outerGlow;
+        ctx.beginPath();
+        ctx.arc(x, y, outerGlowSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw a middle glow
+        const midGlowSize = 4 + Math.sin(time * 3) * 1;
+        const midGlow = ctx.createRadialGradient(x, y, 0, x, y, midGlowSize);
+        midGlow.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        midGlow.addColorStop(1, 'rgba(200, 240, 255, 0.2)');
+        
+        ctx.fillStyle = midGlow;
+        ctx.beginPath();
+        ctx.arc(x, y, midGlowSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw the white dot core
+        const dotSize = 2 + Math.sin(time * 3) * 0.5;
+        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+        ctx.beginPath();
+        ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add a tiny bright center for extra definition
+        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+        ctx.beginPath();
+        ctx.arc(x, y, dotSize * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Function to display data flow indicators between components
+    function displayDataFlowIndicators(ctx, astronomicalData, quantumData) {
+        if (!astronomicalData || !quantumData) return;
+        
+        const width = ctx.canvas.width;
+        const height = ctx.canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Draw subtle flow indicators from astronomical to quantum layer
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        
+        // Draw data paths from astronomical points to quantum nodes
+        for (let i = 0; i < Math.min(astronomicalData.celestialPositions.length, 4); i++) {
+            const celestial = astronomicalData.celestialPositions[i];
+            const startX = centerX + (celestial.x - 0.5) * width * 0.7;
+            const startY = centerY + (celestial.y - 0.5) * height * 0.7;
+            
+            // Find closest quantum node
+            if (quantumData.nodePositions[i]) {
+                const node = quantumData.nodePositions[i];
+                const radius = Math.min(centerX, centerY) * 0.65;
+                const endX = centerX + node.x * radius;
+                const endY = centerY + node.y * radius;
+                
+                // Draw curved path
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo(
+                    (startX + endX) / 2 + (Math.random() - 0.5) * 50,
+                    (startY + endY) / 2 + (Math.random() - 0.5) * 50,
+                    endX, endY
+                );
+                ctx.strokeStyle = 'rgba(97, 218, 251, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+        
+        // Draw data paths from quantum nodes to token pulse waves
+        for (let i = 0; i < Math.min(quantumData.resonancePoints.length, 3); i++) {
+            const resonance = quantumData.resonancePoints[i];
+            const radius = Math.min(centerX, centerY) * 0.65;
+            const startX = centerX + resonance.x * radius;
+            const startY = centerY + resonance.y * radius;
+            
+            // Endpoint on token pulse wave
+            const waveRadius = Math.min(centerX, centerY) * 0.6 * (0.6 + i * 0.15);
+            const angle = Math.PI * 2 * (i / 3);
+            const endX = centerX + Math.cos(angle) * waveRadius;
+            const endY = centerY + Math.sin(angle) * waveRadius;
+            
+            // Draw curved path
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.quadraticCurveTo(
+                (startX + endX) / 2 + (Math.random() - 0.5) * 30,
+                (startY + endY) / 2 + (Math.random() - 0.5) * 30,
+                endX, endY
+            );
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        ctx.restore();
+    }
+    
+    function createDynamicElements() {
+        // Add data points
+        const container = document.querySelector('.integrated-visualization');
+        
+        for (let i = 0; i < 20; i++) {
+            const dataPoint = document.createElement('div');
+            dataPoint.className = 'data-point';
+            
+            // Random position within container
+            const top = Math.random() * 100;
+            const left = Math.random() * 100;
+            
+            dataPoint.style.top = `${top}%`;
+            dataPoint.style.left = `${left}%`;
+            
+            container.appendChild(dataPoint);
+        }
+        
+        // Add particle effects
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Size varies
+            const size = Math.random() * 3 + 1;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Start at random positions
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.left = `${Math.random() * 100}%`;
+            
+            container.appendChild(particle);
+        }
+    }
+    
+    function simulateDataUpdates() {
+        // Clear any existing intervals to prevent multiple instances
+        if (window.dataUpdateInterval) {
+            clearInterval(window.dataUpdateInterval);
+        }
+        
+        // Initialize state variables for synchronization if they don't exist
+        if (!window.securityStatus) {
+            window.securityStatus = {
+                astronomicalSync: { julianDay: 0, updateTime: 0 },
+                quantumIdentity: { rotationValue: 0, updateTime: 0 },
+                tokenValue: "950.00"
+            };
+        }
+        
+        if (!window.TAUDashboard) {
+            window.TAUDashboard = {};
+        }
+        
+        // Return the interval ID so we can track and manage it
+        // Initialize static card values once
+        const tokenValueEl = document.getElementById('data-token-value');
+        if (tokenValueEl) {
+            tokenValueEl.textContent = "950.00";
+            tokenValueEl.style.textShadow = 'none';
+            
+            // Also update the τ-coin value in the visualization if it exists
+            const tauCoinValueDisplay = document.getElementById('tau-coin-value-display');
+            if (tauCoinValueDisplay) {
+                tauCoinValueDisplay.textContent = tokenValueEl.textContent;
+            }
+            
+            // Update security status
+            window.securityStatus.tokenValue = tokenValueEl.textContent;
+        }
+        
+        const rotationEl = document.getElementById('data-rotation');
+        if (rotationEl) {
+            rotationEl.textContent = "180.0°";
+            rotationEl.style.textShadow = 'none';
+        }
+        
+        const timeEl = document.getElementById('data-time');
+        if (timeEl) {
+            timeEl.textContent = "2460045.32";
+            timeEl.style.textShadow = 'none';
+        }
+        
+        const precisionEl = document.getElementById('verification-precision');
+        if (precisionEl) {
+            precisionEl.textContent = "99.9975%";
+            precisionEl.style.textShadow = 'none';
+            precisionEl.style.color = 'var(--accent-blue)';
+        }
+        
+        // Only update visualization components, not the data cards
+        window.dataUpdateInterval = setInterval(() => {
+            // Calculate high-precision Julian Day for visualization updates only
+            const now = new Date();
+            const julianDay = (now.getTime() / 86400000) + 2440587.5;
+            const julianFraction = julianDay - Math.floor(julianDay);
+            
+            // Only update the visualization components, not the actual displayed values
+            const rotation = ((julianFraction * 360 * 1.5) % 360).toFixed(1);
+            
+            // Update the global rotation value directly for components that need it
+            window.calculatedRotation = parseFloat(rotation);
+            
+            // Update through TAUDashboard for standardized interface
+            if (window.TAUDashboard && window.TAUDashboard.updateRotation) {
+                window.TAUDashboard.updateRotation(parseFloat(rotation));
+            }
+            
+            if (window.TAUDashboard && window.TAUDashboard.updateJulianDay) {
+                window.TAUDashboard.updateJulianDay(julianDay);
+            }
+            
+            // Ensure security status is updated for components that read it directly
+            window.securityStatus.astronomicalSync = {
+                julianDay: julianDay,
+                updateTime: Date.now()
+            };
+            
+            window.securityStatus.quantumIdentity = {
+                rotationValue: parseFloat(rotation),
+                updateTime: Date.now()
+            };
+            
+        }, 250); // Keep visualization updates smooth
+        
+        return window.dataUpdateInterval;
+    }
+    
+    // Function to show popups
+    function showPopup(popupId) {
+        const popup = document.getElementById(popupId);
+        if (popup) {
+            // Apply smooth fade-in effect
+            popup.style.opacity = '0';
+            popup.style.display = 'flex';
+            
+            // Trigger reflow to ensure transition works
+            popup.offsetHeight;
+            
+            // Fade in
+            popup.style.transition = 'opacity 0.3s ease';
+            popup.style.opacity = '1';
+        }
+    }
+    
+    // Function to hide popups
+    function closePopup(popupId) {
+        const popup = document.getElementById(popupId);
+        if (popup) {
+            // Add a smooth fade-out effect
+            popup.style.opacity = '0';
+            setTimeout(function() {
+                popup.style.display = 'none';
+                popup.style.opacity = '1';
+            }, 200);
+        }
+    }
+    </script>
+    
+    <!-- Popups for data cards -->
+    <div id="astronomical-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('astronomical-popup')">×</div>
+            <h3 class="popup-title">Astronomical Clock</h3>
+            <p class="description-text">This visualization implements a universal time reference anchored to precise Julian Day calculations (JD = 2440587.5 + milliseconds/86400000), providing an immutable temporal foundation based on astronomical constants. Unlike standard earth-based clocks, this astronomical timepiece operates on sidereal timescales with cardinal directions (N, E, S, W) marking the ecliptic reference frame. The primary indicator (white hand) completes one rotation per Julian Day (86,400 seconds), while the secondary indicator (blue hand) rotates every 7,200 seconds (2 hours), establishing a dual-reference temporal system using the PHI constant (1.618033988749895) for harmonic spacing. This deliberate inversion of traditional timekeeping mechanics creates a stable reference frame against which all ephemeris calculations are calibrated, using slow-moving hands to track the fundamental cosmic timeframe within which faster planetary motions are measured and verified.</p>
+            <p class="description-text">The clock's nested concentric rings establish the J2000.0 reference plane for high-precision astronomical measurements (±0.0001 arcseconds), with the hands tracing golden-ratio orbital arcs through the cosmic coordinate system. The luminous blue accents represent astronomical symmetry breaking at the 10^-43 second threshold, while the central glow indicates temporal synchronization with DE431 ephemeris standards. This design ensures the timepiece functions as a mathematically provable astronomical reference point with perfect temporal alignment to universal Julian Day calculations (error margin less than 1×10^-6 seconds) that underpin the entire security framework.</p>
+            <p class="description-relation">In the integrated security system, this component acts as the temporal foundation, generating baseline timing signals that propagate to the quantum identity layer through quantum modulation vectors (QMVs) with Fourier transformations. The clock's rotation modulates the pentagons' angular orientation (α = JD × 0.05 + (i × 2π/N)), the position vectors of quantum nodes (P = {cos(θ + JD × 0.01), sin(θ + JD × 0.01)}), and the flow corridors that channel quantum entropy. Since all cryptographic validation depends on precise timing, this astronomical timepiece serves as the deterministic master reference ensuring token verification only occurs at precisely calculated temporal alignments (2π/5 radians offset from baseline).</p>
+        </div>
+    </div>
+    
+    <div id="quantum-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('quantum-popup')">×</div>
+            <h3 class="popup-title">Quantum Identity</h3>
+            <p class="description-text">This visualization represents the quantum identity layer of the security system, featuring a Penrose tiling pattern with mathematically aperiodic properties. The pentagonal structures maintain perfect golden ratio (φ = 1.618033988749895) relationships between elements, creating a pattern that never perfectly repeats yet exhibits deterministic organization.</p>
+            <p class="description-text">The identity system uses the Julian Day calculations from the astronomical clock to modulate the angular orientation of the pentagons, ensuring that the pattern evolves in precise mathematical harmony with celestial movements. This creates a security foundation based on mathematically verifiable natural constants rather than arbitrary human systems.</p>
+        </div>
+    </div>
+    
+    <div id="harmonic-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('harmonic-popup')">×</div>
+            <h3 class="popup-title">𝜏 Harmonic</h3>
+            <p class="description-text">The 𝜏 Harmonic component represents the system's cryptographic signature, derived from the circle constant 𝜏 (tau = 6.28318...) and its relationship to the golden ratio flows established in the other components. This visualization demonstrates how mathematical constants from natural systems can be utilized in cryptographic verification.</p>
+            <p class="description-text">The harmonic resonance patterns visualized here are mathematically synchronized with both the astronomical clock and quantum identity layers, completing the three-layer security architecture.</p>
+        </div>
+    </div>
+    
+    <div id="integrated-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('integrated-popup')">×</div>
+            <h3 class="popup-title">Integrated Security System</h3>
+            <p class="description-text">This visualization demonstrates how the three security components work together in an integrated system. The astronomical clock establishes the temporal foundation with Julian Day precision, the quantum identity layer provides mathematically aperiodic patterns for verification, and the 𝜏 harmonic creates the cryptographic signature.</p>
+            <p class="description-text">All three components are synchronized through mathematical constants like the golden ratio (φ) and tau (𝜏), creating a security system anchored to universal physical and mathematical constants rather than arbitrary digital constructs.</p>
+        </div>
+    </div>
+    
+    <div id="token-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('token-popup')">×</div>
+            <h3 class="popup-title">𝜏 Harmonic</h3>
+            <p class="popup-description">This value represents a mathematical constant derived from celestial mechanics and astronomical time. The 𝜏 Harmonic is calculated using the golden ratio (φ) and planetary positions to create a unique numerical signature that varies with cosmic rhythms.</p>
+            <p class="popup-description">The displayed value fluctuates according to a carefully designed algorithm that incorporates prime number harmonics and Julian Day calculations, creating a mathematical foundation that's anchored to universal constants rather than arbitrary human systems.</p>
+            <p class="popup-note">Note: This mathematical value serves as the core synchronization metric for the security system, demonstrating how natural universal constants can provide a foundation for advanced cryptographic verification.</p>
+        </div>
+    </div>
+    
+    <div id="rotation-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('rotation-popup')">×</div>
+            <h3 class="popup-title">Temporal Rotation</h3>
+            <p class="popup-description">Temporal Rotation measures our current position in Earth's rotation cycle, calculated with high-precision astronomical formulas. This value synchronizes all system components to a universal reference frame that exists independent of human timekeeping systems.</p>
+            <p class="popup-description">By anchoring cryptographic operations to Earth's actual rotational position rather than conventional timestamps, this approach creates a verification mechanism that's both universally accessible yet impossible to falsify without altering the laws of physics.</p>
+            <p class="popup-note">Note: While the underlying astronomical calculations are based on real celestial mechanics, this implementation as a security mechanism is a theoretical concept visualization.</p>
+        </div>
+    </div>
+    
+    <div id="julian-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('julian-popup')">×</div>
+            <h3 class="popup-title">Julian Cycle</h3>
+            <p class="popup-description">The Julian Cycle displays the current Julian Day—astronomers' continuous count of days since January 1, 4713 BCE. Unlike calendar dates which reset annually, this unbroken count provides a universal reference point used in astronomical calculations worldwide.</p>
+            <p class="popup-description">In this demonstration, it serves as an immutable timestamp, creating a chronological anchor that can be independently verified by any observer with access to astronomical data. The microsecond precision shown would theoretically allow for exact synchronization across a distributed network.</p>
+            <p class="popup-note">Note: Julian Day is a genuine astronomical standard used by scientists globally. While the calculation here is accurate, its application as a cryptographic foundation is a theoretical visualization.</p>
+        </div>
+    </div>
+    
+    <div id="precision-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-close" onclick="closePopup('precision-popup')">×</div>
+            <h3 class="popup-title">Verification Precision</h3>
+            <p class="popup-description">This figure represents the theoretical accuracy achieved when combining three verification layers: astronomical timing, quantum pattern recognition, and cryptographic validation. The system would verify transactions by ensuring perfect alignment between cosmic positioning, quantum states, and mathematical proofs.</p>
+            <p class="popup-description">Such multi-layered verification could potentially create security that's orders of magnitude more robust than conventional approaches—combining the immutability of astronomical constants, the unpredictability of quantum behaviors, and the mathematical rigor of advanced cryptography.</p>
+            <p class="popup-note">Note: The 99.9975% precision value is fictional. This visualization demonstrates a conceptual security approach rather than an implemented system. The dashboard illustrates how natural constants could theoretically enhance digital security.</p>
+        </div>
+    </div>
+<!-- Script to handle header visibility behavior -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get header elements
+        const headerBar = document.querySelector('.header-bar');
+        const headerDropdown = document.querySelector('.header-dropdown');
+        const mainContent = document.querySelector('.main');
+        const body = document.body;
+        
+        // Initialize header as visible
+        headerDropdown.classList.add('active');
+        body.classList.add('header-visible');
+        
+        // Function to toggle header visibility
+        function toggleHeader() {
+            // If header is visible (has active class), hide it
+            if (headerDropdown.classList.contains('active')) {
+                headerDropdown.classList.remove('active');
+                body.classList.remove('header-visible');
+            } else {
+                // Otherwise show it
+                headerDropdown.classList.add('active');
+                body.classList.add('header-visible');
+            }
+        }
+        
+        // Add click handler to main content to toggle header
+        mainContent.addEventListener('click', function(e) {
+            // Only toggle if clicking directly on the main container
+            // not its child elements to avoid interfering with other interactions
+            if (e.target === mainContent) {
+                toggleHeader();
+            }
+        });
+        
+        // Keep original hover functionality
+        headerBar.addEventListener('mouseenter', function() {
+            headerDropdown.classList.add('active');
+            body.classList.add('header-visible');
+        });
+        
+        headerDropdown.addEventListener('mouseenter', function() {
+            headerDropdown.classList.add('active');
+            body.classList.add('header-visible');
+        });
+        
+        headerDropdown.addEventListener('mouseleave', function() {
+            // Only hide on mouse leave if we haven't fixed the header
+            if (!body.classList.contains('header-fixed')) {
+                headerDropdown.classList.remove('active');
+                body.classList.remove('header-visible');
+            }
+        });
+    });
+</script>
+</body>
+</html>
