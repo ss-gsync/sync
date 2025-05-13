@@ -108,19 +108,31 @@ npm run build
 
 This will create optimized assets in the `dist` directory.
 
-## Step 8: Configure Nginx
+## Step 8: Configure Nginx with Password Protection
 
-Install and configure Nginx:
+Install and configure Nginx with HTTP Basic Authentication:
 
 ```bash
 sudo apt update
-sudo apt install -y nginx
+sudo apt install -y nginx apache2-utils
+
+# Create password file for HTTP Basic Authentication
+sudo mkdir -p /etc/nginx/auth
+sudo htpasswd -c /etc/nginx/auth/.htpasswd dev
+# When prompted, enter the password: sync345!
+
+# Verify the password file was created
+sudo cat /etc/nginx/auth/.htpasswd
 
 # Create configuration file
 sudo bash -c 'cat > /etc/nginx/sites-available/gsync << EOF
 server {
     listen 80;
     server_name gsync.io www.gsync.io;
+
+    # Password protection for the entire site
+    auth_basic "Restricted Access";
+    auth_basic_user_file /etc/nginx/auth/.htpasswd;
 
     location / {
         proxy_pass http://localhost:5000;
@@ -131,6 +143,12 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_cache_bypass \$http_upgrade;
+    }
+    
+    # Optional: Allow health check endpoint without authentication
+    location /api/health {
+        auth_basic off;
+        proxy_pass http://localhost:5000/api/health;
     }
 }
 EOF'
@@ -200,6 +218,19 @@ sudo certbot --nginx -d gsync.io -d www.gsync.io
 
 # Verify auto-renewal
 sudo certbot renew --dry-run
+
+# IMPORTANT: Certbot may modify your Nginx configuration
+# Check to ensure password protection is still enabled after SSL setup
+sudo grep -A 5 "auth_basic" /etc/nginx/sites-available/gsync
+
+# If auth_basic settings are missing, manually edit the configuration
+sudo nano /etc/nginx/sites-available/gsync
+# Add these lines inside the server block for both HTTP and HTTPS:
+#   auth_basic "Restricted Access";
+#   auth_basic_user_file /etc/nginx/auth/.htpasswd;
+
+# Test and reload Nginx after any changes
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
 ## Troubleshooting
